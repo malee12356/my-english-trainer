@@ -5,6 +5,8 @@ Offline-first Progressive Web App zum Englischlernen (Deutsch → Englisch, Ziel
 Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen individuelle Lerninhalte, die per JSON/CSV importiert und hier mit Spaced Repetition (FSRS) gelernt werden.
 
 > Status: **v0.1.0 – Phase 1 abgeschlossen, Teile von Phase 2 umgesetzt** (siehe [ROADMAP.md](ROADMAP.md)).
+>
+> App-URL (nach Merge auf `main` und einmaliger Pages-Aktivierung): **https://malee12356.github.io/my-english-trainer/**
 
 ## Funktionen (v0.1.0)
 
@@ -51,6 +53,12 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 
 Details: [IMPORT_GUIDE.md](IMPORT_GUIDE.md), Schema: [DATA_SCHEMA.md](DATA_SCHEMA.md), Beispiele: [`docs/examples/`](docs/examples).
 
+## Bereitstellung
+
+- Jeder Push auf `main` baut, testet und veröffentlicht die App automatisch über GitHub Actions auf GitHub Pages.
+- Einmalig nötig: Repository → *Settings → Pages → Build and deployment → Source: **GitHub Actions***.
+- Pull Requests laufen durch die CI (Typecheck, Unit-Tests, Build, E2E).
+
 ## Entwicklung
 
 ```bash
@@ -67,7 +75,7 @@ Weitere Dokumente: [ARCHITECTURE.md](ARCHITECTURE.md) · [ROADMAP.md](ROADMAP.md
 
 ## Datenschutz
 
-Keine Registrierung, keine Cloud, kein Tracking, keine Analytics. Alle Lerninhalte und -daten bleiben lokal auf dem Gerät. Das Repository enthält nur allgemeine, nicht vertrauliche Beispielinhalte. Persönliche Inhalte und Backups gehören **nicht** ins Repository (`.gitignore` schließt `*backup*.json` aus).
+Keine Registrierung, keine Cloud, kein Tracking, keine Analytics. Alle Lerninhalte und -daten bleiben lokal auf dem Gerät. **Das Repository ist öffentlich** und enthält nur Code und allgemeine, nicht vertrauliche Beispielinhalte. Persönliche Inhalte und Backups gehören **nicht** ins Repository (`.gitignore` schließt `*backup*.json` aus).
 
 ## Lizenzen der Abhängigkeiten
 

@@ -19,4 +19,4 @@ Erste funktionsfähige Version (Phase 1 + Teile von Phase 2).
 - Vollständiges Backup/Restore, CSV-/JSON-Export, Backup-Erinnerung.
 - Sprachausgabe mit britischem/amerikanischem Englisch, Stimmenwahl, Tempo, Wiederholungen.
 - Deutsche und englische Oberfläche, Hell/Dunkel/System.
-- 65 Unit-/Integrationstests, 21 E2E-Tests (iPhone-16-Emulation), CI-Workflow, Deploy-Workflow (Cloudflare Pages).
+- 65 Unit-/Integrationstests, 21 E2E-Tests (iPhone-16-Emulation), CI-Workflow, Deploy-Workflow (GitHub Pages).

@@ -1,10 +1,8 @@
-name: Deploy (Cloudflare Pages)
+name: Deploy (GitHub Pages)
 
-# Builds and deploys main to Cloudflare Pages (free tier, works with private repos).
-# Requires two repository secrets (Settings → Secrets and variables → Actions):
-#   CLOUDFLARE_API_TOKEN  – API token with "Cloudflare Pages: Edit" permission
-#   CLOUDFLARE_ACCOUNT_ID – the Cloudflare account id
-# Without these secrets the deploy job is skipped (CI still runs).
+# Builds main and publishes it to GitHub Pages:
+#   https://<owner>.github.io/<repo>/
+# One-time setup: Settings → Pages → Build and deployment → Source: "GitHub Actions".
 
 on:
   push:
@@ -13,37 +11,40 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: deploy
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
-        if: env.HAS_TOKEN == 'true'
       - uses: actions/setup-node@v4
-        if: env.HAS_TOKEN == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-        if: env.HAS_TOKEN == 'true'
+      - run: npm run typecheck
       - run: npm test
-        if: env.HAS_TOKEN == 'true'
       - run: npm run build
-        if: env.HAS_TOKEN == 'true'
-      - name: Deploy to Cloudflare Pages
-        if: env.HAS_TOKEN == 'true'
-        run: npx --yes wrangler@4 pages deploy dist --project-name=personal-english-trainer --branch=main --commit-dirty=true
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Skipped
-        if: env.HAS_TOKEN != 'true'
-        run: echo "Cloudflare secrets not configured – deployment skipped."
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -10,7 +10,7 @@
 | **vite-plugin-pwa (Workbox, generateSW)** | Precaching aller Assets, `registerType: 'prompt'` → Nutzer bestätigt Updates, keine Unterbrechung laufender Lerneinheiten. |
 | **Hash-Routing** (`#/vocab`) | Funktioniert auf jedem statischen Hoster und offline ohne Server-Rewrites. |
 | **Keine Backend-Pflicht** | Kostenlos, offline, privat. Firebase ist vorbereitet, aber nicht eingebunden (siehe unten). |
-| **Hosting: Cloudflare Pages (empfohlen)** | Kostenlos auch für private Repos, HTTPS, eigene Security-Header (`public/_headers`). GitHub Pages ist für private Repos nur mit kostenpflichtigem Plan möglich. Firebase Hosting wäre ebenfalls kostenlos möglich. |
+| **Hosting: GitHub Pages** | Kostenlos für das öffentliche Repository `my-english-trainer`, HTTPS, Deployment per GitHub Actions bei jedem Push auf `main` (`.github/workflows/deploy.yml`, `BASE_PATH=/<repo>/`). Alternativen ohne Codeänderung: Cloudflare Pages oder Firebase Hosting (beide kostenlos, auch für private Repos). |
 
 ## Struktur
 
@@ -71,9 +71,10 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 ## Sicherheit
 
 - Importierte Inhalte sind reine Daten: Whitelist der Felder, Längenbegrenzung, Steuerzeichen entfernt, `__proto__`-Schlüssel verworfen. Darstellung ausschließlich als React-Text (kein `dangerouslySetInnerHTML`).
-- CSP per Meta-Tag (`script-src 'self'`, `connect-src 'self'`) + Security-Header in `public/_headers` (Cloudflare Pages).
+- CSP per Meta-Tag (`script-src 'self'`, `connect-src 'self'`, `object-src 'none'`). GitHub Pages erlaubt keine eigenen HTTP-Header; bei einem Wechsel zu Cloudflare Pages können zusätzliche Header (z. B. `frame-ancestors`) per `_headers` ergänzt werden.
 - CSV-Export schützt vor Formel-Injection (`'=…`).
 - Keine Secrets im Repo; keine externen Requests zur Laufzeit.
+- **Das Repository ist öffentlich:** Es enthält ausschließlich Code und generische Beispielinhalte – niemals persönliche Lerninhalte, Backups oder berufliche Informationen.
 
 ## iOS-Grenzen (geprüft, Stand iOS 17/18)
 
