@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-26, v0.2.0):** Typecheck ✅ · 80/80 Unit-/Integrationstests ✅ · 25/25 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-26, v0.2.1):** Typecheck ✅ · 84/84 Unit-/Integrationstests ✅ · 28/28 E2E-Tests ✅ · Build ✅.
 
 Speaking Mode automatisiert: Auswertung (Kurzformen, Zahlen, Alternativen, Versuche), Erkennungs-Wrapper mit simulierter Engine (Fehlercodes, Start-Timeout, Abbruch), Planer (nur bei verfügbarer Erkennung, nie automatisch); E2E mit simulierter Erkennung: Einwilligung vor erstem Mikrofonzugriff, richtige/falsche Antwort mit zweitem Versuch, Ablehnen → Schreiben, Berechtigungsfehler → Schreiben, deaktiviert ohne API bzw. offline.
 
@@ -74,6 +74,8 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] I6 Mikrofon in iOS-Einstellungen verweigern → verständliche Meldung + „Stattdessen schreiben“ funktioniert
 - [ ] I7 Während/nach der Übung: orangefarbener Mikrofon-Punkt in der Statusleiste verschwindet, sobald die Erkennung endet
 - [ ] I8 Mit Bluetooth-Headset: Erkennung über Headset-Mikrofon
+- [ ] I9 „Mit iPhone-Diktierfunktion antworten“: Tastatur-🎤 funktioniert in der installierten App, Antwort wird ausgewertet
+- [ ] I10 Einstellungen → Spracherkennung testen: in Safari **und** in der installierten App ausführen, Protokolle vergleichen
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

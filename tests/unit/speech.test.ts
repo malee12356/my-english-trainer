@@ -105,11 +105,11 @@ describe('recognition wrapper', () => {
   it('resolves with all alternatives and sets the language', async () => {
     install((r) => {
       r.onstart?.();
-      r.onresult?.({ results: [[{ transcript: ' hello world ', confidence: 0.9 }, { transcript: 'hello word', confidence: 0.5 }]] });
+      r.onresult?.({ results: [Object.assign([{ transcript: ' hello world ', confidence: 0.9 }, { transcript: 'hello word', confidence: 0.5 }], { isFinal: true })] });
       r.onend?.();
     });
     const res = await startRecognition('en-US').promise;
-    expect(res).toEqual({ transcript: 'hello world', alternatives: ['hello world', 'hello word'] });
+    expect(res).toEqual({ transcript: 'hello world', alternatives: ['hello world', 'hello word'], fromInterim: false });
     expect(lastInstance.lang).toBe('en-US');
   });
 
@@ -127,6 +127,45 @@ describe('recognition wrapper', () => {
       r.onend?.();
     });
     await expect(startRecognition('en-GB').promise).rejects.toMatchObject({ code: 'no-speech' });
+  });
+
+  it('uses interim results when WebKit ends without a final result', async () => {
+    const seen: string[] = [];
+    install((r) => {
+      r.onaudiostart?.();
+      r.onresult?.({ results: [[{ transcript: 'could you' }]] });
+      r.onresult?.({ results: [[{ transcript: 'could you clarify this point' }]] });
+      r.onend?.();
+    });
+    const res = await startRecognition('en-GB', { onInterim: (t) => seen.push(t) }).promise;
+    expect(res).toEqual({ transcript: 'could you clarify this point', alternatives: ['could you clarify this point'], fromInterim: true });
+    expect(seen).toEqual(['could you', 'could you clarify this point']);
+  });
+
+  it('also keeps interim text when the engine reports no-speech afterwards', async () => {
+    install((r) => {
+      r.onstart?.();
+      r.onresult?.({ results: [[{ transcript: 'boundary conditions' }]] });
+      r.onerror?.({ error: 'no-speech' });
+    });
+    expect((await startRecognition('en-GB').promise).transcript).toBe('boundary conditions');
+  });
+
+  it('stops listening after speechend and logs every event', async () => {
+    const events: string[] = [];
+    install((r) => {
+      r.onstart?.();
+      r.onspeechstart?.();
+      r.onspeechend?.(); // our handler calls stop() → fake fires onend
+    });
+    const p = startRecognition('en-GB', { onEvent: (n) => events.push(n) }).promise.catch((e) => e);
+    expect((await p).code).toBe('no-speech');
+    expect(events).toEqual(['start-called', 'start', 'speechstart', 'speechend', 'end']);
+  });
+
+  it('reports "failed" when the engine ends before it ever started', async () => {
+    install((r) => r.onend?.());
+    await expect(startRecognition('en-GB').promise).rejects.toMatchObject({ code: 'failed', detail: 'ended-before-start' });
   });
 
   it('fails fast when the engine never starts (guard for broken web-app builds)', async () => {

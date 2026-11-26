@@ -15,6 +15,7 @@ const ImportScreen = lazy(() => import('./screens/Import').then((m) => ({ defaul
 const PromptAssistant = lazy(() => import('./screens/PromptAssistant').then((m) => ({ default: m.PromptAssistant })));
 const BackupScreen = lazy(() => import('./screens/Backup').then((m) => ({ default: m.BackupScreen })));
 const InfoScreen = lazy(() => import('./screens/Info').then((m) => ({ default: m.InfoScreen })));
+const SpeechTestScreen = lazy(() => import('./screens/SpeechTest').then((m) => ({ default: m.SpeechTestScreen })));
 
 function UpdateBanner() {
   const { L } = useApp();
@@ -59,7 +60,7 @@ const TABS = [
 ];
 const TAB_OF: Record<string, string> = {
   home: 'home', learn: 'learn', vocab: 'vocab', item: 'vocab', stats: 'stats', settings: 'settings',
-  import: 'settings', prompt: 'settings', backup: 'settings', info: 'settings',
+  import: 'settings', prompt: 'settings', backup: 'settings', info: 'settings', 'speech-test': 'settings',
 };
 
 export function App() {
@@ -106,6 +107,7 @@ export function App() {
     case 'prompt': screen = <PromptAssistant />; break;
     case 'backup': screen = <BackupScreen />; break;
     case 'info': screen = <InfoScreen />; break;
+    case 'speech-test': screen = <SpeechTestScreen />; break;
     default: screen = <Home />;
   }
   const activeTab = TAB_OF[section] ?? 'home';

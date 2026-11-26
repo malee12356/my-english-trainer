@@ -117,6 +117,7 @@ export function SettingsScreen() {
           <Toggle checked={settings.sttConsent === 'granted'} onChange={(v) => updateSettings({ sttConsent: v ? 'granted' : 'denied' })} label={L('Zustimmung Spracherkennung', 'Speech recognition consent')} />,
           L('Aufnahmen können vom Anbieter (Apple/Google) verarbeitet werden. Die App speichert keine Aufnahmen.', 'Audio may be processed by the provider (Apple/Google). The app stores no recordings.'),
         )}
+        <ListLink to="/speech-test" icon="🩺" title={L('Spracherkennung testen', 'Test speech recognition')} subtitle={L('Diagnose mit Ereignisprotokoll', 'Diagnostics with event log')} />
         {row(L('Verbindung', 'Connection'), <span className={`badge ${caps.online ? 'green' : 'orange'}`}>{caps.online ? 'online' : 'offline'}</span>)}
       </div>
 
