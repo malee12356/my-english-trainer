@@ -42,7 +42,20 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
   const [revealed, setRevealed] = useState(false);
   const [hint, setHint] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
+  const [interim, setInterim] = useState('');
+  const [dictation, setDictation] = useState(false);
+  const [dictValue, setDictValue] = useState('');
   const handle = useRef<RecognitionHandle | null>(null);
+
+  const evaluate = (alternatives: string[]) => {
+    const n = attempt + 1;
+    setAttempt(n);
+    const ev = evaluateSpeech(alternatives, accepted, n);
+    setEvaluation(ev);
+    if (ev.check.verdict !== 'wrong' || n >= MAX_ATTEMPTS) setRevealed(true);
+    setPhase('result');
+    haptic();
+  };
 
   // never leave the microphone running when the exercise is left
   useEffect(() => () => handle.current?.abort(), []);
@@ -54,18 +67,13 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
     }
     stopSpeaking();
     setError(null);
+    setInterim('');
     setPhase('listening');
-    const h = startRecognition(settings.accent);
+    const h = startRecognition(settings.accent, { onInterim: setInterim });
     handle.current = h;
     try {
       const res = await h.promise;
-      const n = attempt + 1;
-      setAttempt(n);
-      const ev = evaluateSpeech(res.alternatives, accepted, n);
-      setEvaluation(ev);
-      if (ev.check.verdict !== 'wrong' || n >= MAX_ATTEMPTS) setRevealed(true);
-      setPhase('result');
-      haptic();
+      evaluate(res.alternatives);
     } catch (e) {
       const code = e instanceof RecognitionError ? e.code : 'failed';
       if (code === 'aborted') {
@@ -87,7 +95,7 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
     'no-mic': L('Kein Mikrofon gefunden.', 'No microphone found.'),
     aborted: '',
     language: L('Diese Sprache wird von der Spracherkennung nicht unterstützt.', 'This language is not supported by the recogniser.'),
-    failed: L('Die Spracherkennung hat nicht reagiert. Das kommt in installierten Web-Apps unter iOS vor – Alternative: in Safari öffnen oder schreiben.', 'Speech recognition did not respond. This can happen in installed web apps on iOS.'),
+    failed: L('Die Spracherkennung hat nicht reagiert. Das kommt in installierten Web-Apps unter iOS vor. Zuverlässige Alternative: mit der Diktierfunktion der iPhone-Tastatur antworten.', 'Speech recognition did not respond. This can happen in installed web apps on iOS. Reliable alternative: answer with the iPhone keyboard dictation.'),
   };
   const retryable = error === 'no-speech' || error === 'failed' || error === 'network';
   const verdict = evaluation?.check.verdict;
@@ -114,14 +122,37 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
         </div>
       )}
 
-      {(phase === 'idle' || phase === 'listening' || canRetry || (phase === 'error' && retryable)) && (
+      {dictation && phase !== 'result' && (
+        <form
+          className="stack"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (dictValue.trim()) {
+              evaluate([dictValue]);
+              setDictValue('');
+            }
+          }}
+        >
+          <div className="banner info small">
+            {L('Tippe ins Feld und dann auf der Tastatur auf 🎤 (bei Bedarf mit 🌐 zur englischen Tastatur wechseln). Sprich den englischen Satz und tippe auf „Prüfen“.', 'Tap the field, then the 🎤 key on the keyboard (switch to an English keyboard with 🌐 if needed). Say the sentence and tap "Check".')}
+          </div>
+          <input className="input" value={dictValue} onChange={(e) => setDictValue(e.target.value)} aria-label={L('Diktierte Antwort', 'Dictated answer')} placeholder={L('Hier diktieren …', 'Dictate here …')} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} lang="en" style={{ fontSize: 19, minHeight: 54 }} />
+          <button className="btn block big" type="submit" disabled={!dictValue.trim()}>{L('Prüfen', 'Check')}</button>
+          {attempt > 0 && <div className="small muted center">{L(`Versuch ${attempt + 1} von ${MAX_ATTEMPTS}`, `Attempt ${attempt + 1} of ${MAX_ATTEMPTS}`)}</div>}
+        </form>
+      )}
+
+      {!dictation && (phase === 'idle' || phase === 'listening' || canRetry || (phase === 'error' && retryable)) && (
         <div className="center stack" style={{ alignItems: 'center' }}>
           {phase === 'listening' ? (
             <>
               <button className="btn mic listening" onClick={() => handle.current?.stop()} aria-label={L('Zuhören beenden', 'Stop listening')}>
                 <MicIcon />
               </button>
-              <div className="small" role="status" aria-live="polite">{L('Ich höre zu … sprich jetzt Englisch.', 'Listening … speak English now.')}</div>
+              <div className="small" role="status" aria-live="polite">
+                {interim ? <span lang="en" className="break">„{interim}“</span> : L('Ich höre zu … sprich jetzt Englisch.', 'Listening … speak English now.')}
+              </div>
+              <div className="tiny muted">{L('Zum Beenden tippen', 'Tap to finish')}</div>
             </>
           ) : (
             <>
@@ -185,6 +216,11 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
         {phase === 'result' && revealed && verdict !== 'correct' && (
           <button className="btn small secondary" onClick={() => onDone(attempt <= 1 ? 3 : 2, evaluation!.transcript)}>
             {L('Erkennung lag falsch – ich hatte es richtig', 'Recognition was wrong – I said it correctly')}
+          </button>
+        )}
+        {phase !== 'listening' && (phase !== 'result' || canRetry) && (
+          <button className="btn block secondary" onClick={() => { handle.current?.abort(); setDictation(!dictation); setPhase('idle'); }}>
+            {dictation ? L('Zurück zum Mikrofon-Knopf', 'Back to the microphone button') : L('Mit iPhone-Diktierfunktion antworten', 'Answer with keyboard dictation')}
           </button>
         )}
         {phase !== 'listening' && phase !== 'result' && onFallback && (

@@ -2,6 +2,16 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.2.1] – 2026-11-26
+
+### Behoben
+- Speaking Mode in der installierten iPhone-App: keine Reaktion bzw. „Nichts erkannt“. Die Erkennung nutzt jetzt Zwischenergebnisse, wenn WebKit kein Endergebnis liefert, beendet das Zuhören nach einer Sprechpause selbst und wertet jedes Audio-Ereignis als Start. Die Startprüfung ist auf 15 s verlängert, damit iOS die Mikrofon-Freigabe abfragen kann.
+
+### Hinzugefügt
+- Antworten mit der **Diktierfunktion der iPhone-Tastatur** als zuverlässige Alternative zum Mikrofon-Knopf, mit derselben Auswertung.
+- Live-Anzeige des Gehörten während des Sprechens.
+- Einstellungen → **Spracherkennung testen**: Diagnose mit Ereignisprotokoll zum Kopieren.
+
 ## [0.2.0] – 2026-11-26
 
 Phase 2: Speaking Mode (#2).

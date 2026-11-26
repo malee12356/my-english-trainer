@@ -90,7 +90,8 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 
 ## Speaking Mode (v0.2.0)
 
-- `src/speech/recognition.ts`: einmalige Erkennung (`continuous: false`, 3 Alternativen, 10 s Maximaldauer, 5 s Start-Timeout), Fehlercodes `denied`, `network`, `no-speech`, `no-mic`, `failed` …; `abort()` beim Verlassen der Übung → Mikrofon nie dauerhaft aktiv.
+- `src/speech/recognition.ts`: einmalige Erkennung (`continuous: false`, `interimResults: true`, 3 Alternativen, 12 s Maximaldauer, 15 s Start-Timeout). WebKit-Sonderfälle: Zwischenergebnis wird genutzt, wenn kein Endergebnis kommt; `stop()` bei `speechend`; jedes Audio-Ereignis zählt als Start. Fehlercodes `denied`, `network`, `no-speech`, `no-mic`, `failed` …; `abort()` beim Verlassen der Übung → Mikrofon nie dauerhaft aktiv. Ereignisprotokoll über `onEvent` (Diagnose-Seite `#/speech-test`).
+- Ausweg für installierte iOS-Web-Apps: Antwort über die **Tastatur-Diktierfunktion** in ein Textfeld, Auswertung identisch (`evaluateSpeech`). Die App startet dabei selbst keine Aufnahme.
 - `src/domain/speech.ts`: `normalizeSpoken()` (Kurzformen, Zahlen) + `evaluateSpeech()` (bestes Ergebnis gegen alle akzeptierten Antworten; richtig im 1. Versuch → „Gut“, später → „Schwer“, sonst „Nicht gewusst“).
 - Eigene Fähigkeit `speaking` (getrennter FSRS-Zustand). Nur in Einheiten mit gewählter Methode „Speaking“, nicht im Automatikmodus (Mikrofonabfrage soll nie überraschend kommen; Zuverlässigkeit auf iOS erst prüfen).
 - Fallback: Die aktuelle Aufgabe wird zur Writing-Aufgabe (Fähigkeit `writing`).

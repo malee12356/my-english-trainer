@@ -23,7 +23,7 @@ async function fakeRecognition(page: Page) {
           this.onstart?.();
           const err = w.__speech.errors.shift();
           if (err) this.onerror?.({ error: err });
-          else this.onresult?.({ results: [[{ transcript: w.__speech.transcripts.shift() ?? '', confidence: 0.9 }]] });
+          else this.onresult?.({ results: [Object.assign([{ transcript: w.__speech.transcripts.shift() ?? '', confidence: 0.9 }], { isFinal: true })] });
           this.onend?.();
         }, 80);
       }
@@ -117,4 +117,47 @@ test('speaking is disabled without recognition API or when offline', async ({ pa
   await expect(p2.getByText('Benötigt eine Internetverbindung')).toBeVisible();
   await expect(p2.getByRole('radio', { name: /^Speaking/ })).toBeDisabled();
   await context.setOffline(false);
+});
+
+test('keyboard dictation works as a reliable alternative to the microphone button', async ({ page }) => {
+  await setup(page);
+  await page.getByRole('button', { name: 'Mit iPhone-Diktierfunktion antworten' }).click();
+  await page.getByLabel('Diktierte Antwort').fill('I am not entirely sure about that');
+  await page.getByRole('button', { name: 'Prüfen' }).click();
+  await expect(page.getByText('Richtig erkannt!')).toBeVisible();
+  await page.getByRole('button', { name: 'Weiter' }).click();
+  await expect(page.getByText('Einheit abgeschlossen')).toBeVisible();
+});
+
+test('a recogniser that never starts shows the dictation alternative', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    // engine that accepts start() but never fires any event (seen in installed iOS web apps)
+    w.SpeechRecognition = w.webkitSpeechRecognition = class { start() {} stop() {} abort() {} };
+  });
+  await page.goto('/');
+  await importPasted(page, JSON.stringify([{ english: 'mesh', german: 'Netz', category: 'Speak Test' }]));
+  await page.getByRole('button', { name: 'Import bestätigen (1)' }).click();
+  await expect(page.getByRole('heading', { name: 'Vokabeln' })).toBeVisible();
+  await page.goto('/#/speech-test');
+  await page.getByRole('button', { name: 'Zustimmen' }).click();
+  await expect(page.locator('pre.prompt')).toContainText('API: SpeechRecognition');
+  await page.goto('/#/session?topic=c-speak-test&method=speaking&min=5');
+  await page.getByRole('button', { name: 'Sprechen', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Diktierfunktion', { timeout: 20_000 });
+  await page.getByRole('button', { name: 'Mit iPhone-Diktierfunktion antworten' }).click();
+  await page.getByLabel('Diktierte Antwort').fill('mesh');
+  await page.getByRole('button', { name: 'Prüfen' }).click();
+  await expect(page.getByText('Richtig erkannt!')).toBeVisible();
+});
+
+test('speech test screen logs engine events', async ({ page }) => {
+  await fakeRecognition(page);
+  await page.goto('/#/speech-test');
+  await page.getByRole('button', { name: 'Zustimmen' }).click();
+  await queue(page, 'transcripts', 'could you clarify this point');
+  await page.getByRole('button', { name: 'Test starten' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Erkannt' })).toContainText('could you clarify this point');
+  await expect(page.locator('pre.prompt')).toContainText('result-final');
+  await expect(page.locator('pre.prompt')).toContainText('start-called');
 });
