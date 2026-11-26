@@ -4,7 +4,7 @@ Offline-first Progressive Web App zum Englischlernen (Deutsch → Englisch, Ziel
 
 Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen individuelle Lerninhalte, die per JSON/CSV importiert und hier mit Spaced Repetition (FSRS) gelernt werden.
 
-> Status: **v0.1.0 – Phase 1 abgeschlossen, Teile von Phase 2 umgesetzt** (siehe [ROADMAP.md](ROADMAP.md)).
+> Status: **v0.2.0 – Phase 1 abgeschlossen, Phase 2 in Arbeit (Speaking Mode fertig)** (siehe [ROADMAP.md](ROADMAP.md)).
 >
 > App-URL (nach Merge auf `main` und einmaliger Pages-Aktivierung): **https://malee12356.github.io/my-english-trainer/**
 
@@ -15,14 +15,14 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 | PWA | Installierbar über Safari („Zum Home-Bildschirm“), Vollbild, eigenes Icon, offline nach dem ersten Laden, Update-Hinweis ohne Datenverlust |
 | Dashboard | Tagesziel, heutige Lernzeit, fällige Wiederholungen, neu/sicher/schwierig, Lernserie, zuletzt genutzter Modus, Empfehlung, 7-Tage-Verlauf, „Jetzt lernen“ mit 5–45 min |
 | Themenmodi | Everyday, Business, Engineering, Meeting, Handball (als Kategorien, mehrfach zuordenbar), Personal Weakness Mode, eigene Kategorien. Driving Mode: transparent als „Phase 3“ markiert |
-| Lernmethoden | Karteikarten (EN→DE, DE→EN, zufällig; 4 Bewertungsstufen), Writing Mode (Tippfehler, Alternativen, Satzzeichen, Diff-Darstellung), Lückentext (3 Stufen), Satzbau, Listening (Auswahl & Diktat, Tempo). Speaking/Aussprache/Free Speaking: als geplant markiert |
+| Lernmethoden | Karteikarten (EN→DE, DE→EN, zufällig; 4 Bewertungsstufen), Writing Mode (Tippfehler, Alternativen, Satzzeichen, Diff-Darstellung), Lückentext (3 Stufen), Satzbau, Listening (Auswahl & Diktat, Tempo), Speaking (Spracherkennung mit Einwilligung, 3 Versuche, Schreib-Fallback). Aussprache/Free Speaking: als geplant markiert |
 | Wiederholung | FSRS (ts-fsrs), getrennt je Fähigkeit (Verstehen, Abrufen, Schreiben, Hören), Sitzungsschutz gegen Intervall-Aufblähung, Tagesplanung nach Zeitbudget |
 | Import | JSON & CSV aus Datei (Dateien-App) oder Zwischenablage, Validierung, Vorschau, Duplikate, Aktualisierungen, Kategorien automatisch, Fortschritt bleibt erhalten, Bestätigung nötig |
 | ChatGPT-Assistent | Konfigurierbarer Prompt (Anzahl, Thema, Fokus, Niveau, Inhaltsarten) zum Kopieren |
 | Vokabeln | Suche, Filter (Status, Kategorie, Niveau, Typ, Sammlung), Sortierung, Favoriten, Archiv, Sammlungen, Mehrfachauswahl, Bearbeiten, Löschen mit Bestätigung, Anhören |
 | Statistik | Lernzeit Tag/Woche/Monat, 7/30/90 Tage, Erfolgsquote je Methode, Fortschritt je Kategorie, Fehlerquote pro Woche, Aktivitätskalender, Serie; gemessen vs. geschätzt gekennzeichnet |
 | Backup | Vollständiges versioniertes JSON-Backup, Restore mit Vorschau & Validierung, CSV/JSON-Export, Erinnerung, letzte Sicherung |
-| Sprache | Sprachausgabe (Web Speech API, britisch/amerikanisch, Stimme, Tempo, Wiederholungen, Pausen); Erkennung/Aufnahme technisch vorbereitet |
+| Sprache | Sprachausgabe (Web Speech API, britisch/amerikanisch, Stimme, Tempo, Wiederholungen, Pausen); Spracherkennung im Speaking Mode (benötigt Internet + Zustimmung); Aufnahme vorbereitet |
 | UI | Deutsch (Standard) oder Englisch, Hell/Dunkel/System, Safe Areas, große Touch-Ziele, Bottom Navigation |
 
 ## Auf dem iPhone installieren, aktualisieren, sichern

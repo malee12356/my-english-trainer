@@ -111,7 +111,12 @@ export function SettingsScreen() {
         {usage && row(L('Belegter Speicher', 'Storage used'), <span className="muted">{usage}</span>)}
         {row(L('Als App installiert', 'Installed as app'), <span className={`badge ${caps.standalone ? 'green' : ''}`}>{caps.standalone ? L('ja', 'yes') : L('nein', 'no')}</span>)}
         {row(L('Sprachausgabe', 'Speech output'), <span className={`badge ${caps.tts ? 'green' : 'red'}`}>{caps.tts ? L('verfügbar', 'available') : L('nicht verfügbar', 'unavailable')}</span>)}
-        {row(L('Spracherkennung (Phase 2)', 'Speech recognition (phase 2)'), <span className="badge">{caps.recognition ? L('API vorhanden', 'API present') : L('nicht vorhanden', 'not present')}</span>, L('Benötigt i. d. R. Internet; wird vor Nutzung geprüft', 'Usually needs internet; checked before use'))}
+        {row(L('Spracherkennung', 'Speech recognition'), <span className={`badge ${caps.recognitionUsable ? 'green' : caps.recognition ? 'orange' : 'red'}`}>{caps.recognitionUsable ? L('verfügbar', 'available') : caps.recognition ? L('offline', 'offline') : L('nicht vorhanden', 'not present')}</span>, L('Für den Speaking Mode; benötigt Internet', 'For Speaking Mode; needs internet'))}
+        {row(
+          L('Zustimmung Spracherkennung', 'Speech recognition consent'),
+          <Toggle checked={settings.sttConsent === 'granted'} onChange={(v) => updateSettings({ sttConsent: v ? 'granted' : 'denied' })} label={L('Zustimmung Spracherkennung', 'Speech recognition consent')} />,
+          L('Aufnahmen können vom Anbieter (Apple/Google) verarbeitet werden. Die App speichert keine Aufnahmen.', 'Audio may be processed by the provider (Apple/Google). The app stores no recordings.'),
+        )}
         {row(L('Verbindung', 'Connection'), <span className={`badge ${caps.online ? 'green' : 'orange'}`}>{caps.online ? 'online' : 'offline'}</span>)}
       </div>
 

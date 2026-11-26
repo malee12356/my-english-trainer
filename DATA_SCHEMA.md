@@ -53,11 +53,11 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (`everyday`, `business`, 
 |---|---|---|
 | `items` | `id` (UUID) | Inhalt + `key` (Duplikat-Schlüssel), `externalId`, `origin` (`import`/`manual`/`starter`), `favorite`, `archived`, `collections[]`, `schemaVersion` |
 | `progress` | `itemId:skill` | FSRS: `due`, `stability`, `difficulty`, `state` (0 neu, 1 lernen, 2 wiederholen, 3 neu lernen), `reps`, `lapses`, `last_review`, … + Statistik: `correct`, `wrong`, `skipped`, `answered`, `totalResponseMs`, `lastGrade` |
-| `reviewLogs` | auto | Jede Antwort: `itemId`, `skill`, `method`, `topic`, `grade` 1–4, `correct`, `scheduled` (hat den Plan verändert?), `responseMs`, `sessionId`, `ts`, `isNew`, `given` |
+| `reviewLogs` | auto | Jede Antwort: `itemId`, `skill`, `method`, `topic`, `grade` 1–4, `correct`, `scheduled` (hat den Plan verändert?), `responseMs`, `sessionId`, `ts`, `isNew`, `given` (getippte Antwort bzw. im Speaking Mode der erkannte Text, max. 200 Zeichen – nie Audio) |
 | `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct` |
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
-| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`) |
+| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung) |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 

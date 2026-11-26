@@ -6,6 +6,7 @@ import type { Method } from '../domain/types';
 import { navigate, useApp, useSnapshot } from '../state';
 import { Segmented } from '../ui/components';
 import { ttsSupported } from '../speech/tts';
+import { detectSpeechCapabilities } from '../speech/capabilities';
 
 export function Learn() {
   const { L, lang, settings, updateSettings, route } = useApp();
@@ -14,6 +15,7 @@ export function Learn() {
   const [method, setMethod] = useState<Method | 'auto'>((route.query.get('method') as Method) ?? 'auto');
   const [minutes, setMinutes] = useState(settings.defaultDurationMin);
   const tts = ttsSupported();
+  const stt = detectSpeechCapabilities();
 
   const counts = useMemo(() => {
     if (!snap) return null;
@@ -32,9 +34,9 @@ export function Learn() {
     if (!snap) return 0;
     return planSession(snap.items, indexProgress(snap.progress), {
       topic, method, minutes, now: new Date(), newPerDay: settings.newPerDay, newIntroducedToday: 0,
-      flashcardDirection: settings.flashcardDirection, ttsAvailable: tts,
+      flashcardDirection: settings.flashcardDirection, ttsAvailable: tts, sttAvailable: stt.recognitionUsable,
     }).length;
-  }, [snap, topic, method, minutes, settings.newPerDay, settings.flashcardDirection, tts]);
+  }, [snap, topic, method, minutes, settings.newPerDay, settings.flashcardDirection, tts, stt.recognitionUsable]);
 
   if (!snap || !counts) return <main className="page" aria-busy="true" />;
   const customCats = snap.categories.filter((c) => !c.builtin);
@@ -83,7 +85,8 @@ export function Learn() {
           {method === 'auto' && <span className="badge accent">✓</span>}
         </button>
         {METHODS.map((m) => {
-          const unavailable = m.status !== 'ready' || (m.needsTts && !tts);
+          const sttMissing = m.needsStt && !stt.recognitionUsable;
+          const unavailable = m.status !== 'ready' || (m.needsTts && !tts) || sttMissing;
           return (
             <button key={m.id} type="button" role="radio" aria-checked={method === m.id} className="list-item" disabled={unavailable} onClick={() => setMethod(m.id)} style={{ opacity: unavailable ? 0.55 : 1 }}>
               <span className="icon-badge" aria-hidden="true">{m.emoji}</span>
@@ -94,7 +97,11 @@ export function Learn() {
                     ? L(`Phase ${m.phase} · noch nicht verfügbar`, `Phase ${m.phase} · not available yet`)
                     : m.needsTts && !tts
                       ? L('Keine Sprachausgabe auf diesem Gerät', 'No speech output on this device')
-                      : lang === 'de' ? m.descDe : m.descEn}
+                      : sttMissing
+                        ? !stt.recognition
+                          ? L('Keine Spracherkennung auf diesem Gerät/Browser', 'No speech recognition on this device/browser')
+                          : L('Benötigt eine Internetverbindung', 'Needs an internet connection')
+                        : lang === 'de' ? m.descDe : m.descEn}
                 </span>
               </span>
               {method === m.id && <span className="badge accent">✓</span>}

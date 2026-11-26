@@ -1165,3 +1165,25 @@ pre.prompt {
   opacity: 0;
   pointer-events: none;
 }
+
+/* ------------------------------------------------------------ speaking */
+.btn.mic {
+  width: 96px;
+  height: 96px;
+  border-radius: 48px;
+  padding: 0;
+  margin: 8px auto 0;
+}
+.btn.mic.listening {
+  background: var(--red);
+  color: #fff;
+  animation: mic-pulse 1.4s ease-out infinite;
+}
+@keyframes mic-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--red) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 22px transparent;
+  }
+}

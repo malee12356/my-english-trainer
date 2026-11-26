@@ -13,6 +13,8 @@ import { Builder } from './exercises/Builder';
 import { Flashcard } from './exercises/Flashcard';
 import { Listening } from './exercises/Listening';
 import { GapFill, Writing } from './exercises/Writing';
+import { Speaking } from './exercises/Speaking';
+import { detectSpeechCapabilities } from '../speech/capabilities';
 import type { ExerciseProps } from './exercises/shared';
 
 const MAX_IDLE_MS = 60_000;
@@ -43,6 +45,7 @@ export function SessionScreen() {
       const tasks = planSession(s.items, indexProgress(s.progress), {
         topic, method, minutes, now: new Date(), newPerDay: s.settings.newPerDay, newIntroducedToday: introduced,
         flashcardDirection: s.settings.flashcardDirection, ttsAvailable: ttsSupported(),
+        sttAvailable: detectSpeechCapabilities().recognitionUsable,
       });
       setSnap(s);
       setQueue(tasks);
@@ -106,7 +109,14 @@ export function SessionScreen() {
   };
 
   const progress = queue.length ? Math.min(1, idx / queue.length) : 0;
-  const props: ExerciseProps | null = task && item ? { item, task, progress: progressById.get(progressId(task.itemId, task.skill)), pool, settings, onDone } : null;
+  // Speech not possible → same item as a writing exercise (recorded under the writing skill).
+  const onFallback = () => {
+    if (!task) return;
+    const next = queue.slice();
+    next[idx] = { ...task, method: 'writing', skill: 'writing' };
+    setQueue(next);
+  };
+  const props: ExerciseProps | null = task && item ? { item, task, progress: progressById.get(progressId(task.itemId, task.skill)), pool, settings, onDone, onFallback } : null;
 
   return (
     <main className="page no-tabbar">
@@ -134,12 +144,13 @@ export function SessionScreen() {
       )}
 
       {!done && props && (
-        <div key={`${idx}-${task.itemId}`} style={{ animation: 'fade-in .2s ease-out' }}>
+        <div key={`${idx}-${task.itemId}-${task.method}`} style={{ animation: 'fade-in .2s ease-out' }}>
           {task.method === 'flashcards' && <Flashcard {...props} />}
           {task.method === 'writing' && <Writing {...props} />}
           {task.method === 'gapfill' && <GapFill {...props} />}
           {task.method === 'builder' && <Builder {...props} />}
           {task.method === 'listening' && <Listening {...props} />}
+          {task.method === 'speaking' && <Speaking {...props} />}
         </div>
       )}
       {!done && task && !item && (

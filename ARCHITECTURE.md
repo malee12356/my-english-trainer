@@ -82,11 +82,19 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 |---|---|---|
 | Speicher | IndexedDB funktioniert; Home-Bildschirm-Apps sind vom 7-Tage-Limit für Website-Daten ausgenommen, Löschung bei Speichermangel bleibt möglich. `storage.persist()` ab Safari 17. | Backup-Erinnerung, Export in Dateien-App. |
 | Sprachausgabe | `speechSynthesis` verfügbar, offline mit Systemstimmen. Start muss durch Nutzer-Tipp erfolgen. **Stoppt bei Bildschirmsperre/Hintergrund.** | Vorlesen per Tipp; kein Versprechen für Hintergrundbetrieb. |
-| Spracherkennung | `webkitSpeechRecognition` ab iOS 14.5, nutzt Server-Diktat (Internet nötig), im installierten PWA-Modus historisch unzuverlässig. | Phase 2 mit Fähigkeitsprüfung, Fallback auf Schreib-/Karteikartenübung. Nie als Aussprachebewertung darstellen. |
+| Spracherkennung | `webkitSpeechRecognition` ab iOS 14.5, nutzt in der Regel Server-Diktat von Apple (Internet nötig), im installierten PWA-Modus historisch unzuverlässig. | Speaking Mode nur online wählbar, Einwilligung vor erster Nutzung, Start-Timeout (5 s) gegen hängende Engines, „Stattdessen schreiben“. Nie als Aussprachebewertung darstellen. |
 | Aufnahme | `MediaRecorder` ab iOS 14.5 (`audio/mp4`). Mikrofon nur auf Anforderung. | Phase 2; Aufnahmen nur im Speicher, dauerhaft nur mit Zustimmung. |
 | Hintergrund/Sperrbildschirm | Web-Apps werden im Hintergrund pausiert; Media Session nur für `<audio>`, nicht für Sprachsynthese. | **Driving Mode** ist als PWA nicht zuverlässig bildschirmfrei umsetzbar → Phase 3: Variante mit vorab erzeugten Audiodateien prüfen oder native Erweiterung. |
 | Bluetooth/Unterbrechungen | Ausgabe folgt der System-Route (Auto-Bluetooth funktioniert bei aktiver App). Anrufe/Navigation unterbrechen die Sprachausgabe ohne Fortsetzung. | Dokumentiert; Fortsetzung manuell. |
 | Haptik | `navigator.vibrate` nicht unterstützt; ab iOS 18 Workaround über nativen Switch. | Optional, als „eingeschränkt“ gekennzeichnet. |
+
+## Speaking Mode (v0.2.0)
+
+- `src/speech/recognition.ts`: einmalige Erkennung (`continuous: false`, 3 Alternativen, 10 s Maximaldauer, 5 s Start-Timeout), Fehlercodes `denied`, `network`, `no-speech`, `no-mic`, `failed` …; `abort()` beim Verlassen der Übung → Mikrofon nie dauerhaft aktiv.
+- `src/domain/speech.ts`: `normalizeSpoken()` (Kurzformen, Zahlen) + `evaluateSpeech()` (bestes Ergebnis gegen alle akzeptierten Antworten; richtig im 1. Versuch → „Gut“, später → „Schwer“, sonst „Nicht gewusst“).
+- Eigene Fähigkeit `speaking` (getrennter FSRS-Zustand). Nur in Einheiten mit gewählter Methode „Speaking“, nicht im Automatikmodus (Mikrofonabfrage soll nie überraschend kommen; Zuverlässigkeit auf iOS erst prüfen).
+- Fallback: Die aktuelle Aufgabe wird zur Writing-Aufgabe (Fähigkeit `writing`).
+- Einwilligung `settings.sttConsent` (`granted`/`denied`/nicht gefragt). Gespeichert wird nur der erkannte Text in `reviewLogs.given` (max. 200 Zeichen), keine Audiodaten.
 
 ## Vorbereitet, nicht aktiv
 

@@ -20,6 +20,7 @@ type RecognitionCtor = new () => {
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string; confidence: number }>> }) => void) | null;
   onerror: ((e: { error: string }) => void) | null;
   onend: (() => void) | null;
+  onstart?: (() => void) | null;
 };
 
 export function recognitionCtor(): RecognitionCtor | null {
@@ -43,6 +44,8 @@ export interface SpeechCapabilities {
   recognition: boolean;
   /** Recognition on iOS/Chrome uses server-side dictation → needs network. */
   recognitionNeedsNetwork: boolean;
+  /** Recognition can be used right now (API present and online). */
+  recognitionUsable: boolean;
   mediaRecorder: boolean;
   recorderMime: string | null;
   microphoneApi: boolean;
@@ -69,6 +72,7 @@ export function detectSpeechCapabilities(): SpeechCapabilities {
     tts: hasWindow && 'speechSynthesis' in window,
     recognition: recognitionCtor() !== null,
     recognitionNeedsNetwork: true,
+    recognitionUsable: recognitionCtor() !== null && (typeof navigator === 'undefined' || navigator.onLine),
     mediaRecorder: typeof MediaRecorder !== 'undefined',
     recorderMime: recorderMimeType(),
     microphoneApi: typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia,
@@ -76,46 +80,4 @@ export function detectSpeechCapabilities(): SpeechCapabilities {
     ios: isIOS(),
     online: typeof navigator === 'undefined' ? true : navigator.onLine,
   };
-}
-
-export interface RecognitionResult {
-  transcript: string;
-  alternatives: string[];
-}
-
-/**
- * One-shot recognition. The microphone is only requested when this is called
- * (never in the background) and released when recognition ends.
- */
-export function recognizeOnce(lang: string, timeoutMs = 12_000): Promise<RecognitionResult> {
-  const Ctor = recognitionCtor();
-  if (!Ctor) return Promise.reject(new Error('unsupported'));
-  return new Promise((resolve, reject) => {
-    const r = new Ctor();
-    r.lang = lang;
-    r.interimResults = false;
-    r.maxAlternatives = 3;
-    r.continuous = false;
-    let done = false;
-    const t = setTimeout(() => {
-      if (!done) r.stop();
-    }, timeoutMs);
-    r.onresult = (e) => {
-      done = true;
-      clearTimeout(t);
-      const res = e.results[0];
-      const alts = Array.from({ length: res.length }, (_, i) => res[i].transcript.trim());
-      resolve({ transcript: alts[0] ?? '', alternatives: alts.slice(1) });
-    };
-    r.onerror = (e) => {
-      done = true;
-      clearTimeout(t);
-      reject(new Error(e.error || 'recognition-error'));
-    };
-    r.onend = () => {
-      clearTimeout(t);
-      if (!done) reject(new Error('no-speech'));
-    };
-    r.start();
-  });
 }
