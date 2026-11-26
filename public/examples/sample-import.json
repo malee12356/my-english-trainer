@@ -1,0 +1,45 @@
+[
+  {
+    "english": "to take into account",
+    "german": "berücksichtigen",
+    "example_en": "We need to take this into account.",
+    "example_de": "Wir müssen das berücksichtigen.",
+    "alternatives": ["to consider"],
+    "ipa": "/tə teɪk ˈɪntuː əˈkaʊnt/",
+    "category": "Meeting Mode",
+    "level": "B2"
+  },
+  {
+    "id": "sample-002",
+    "english": "The mesh is too coarse near the fillet.",
+    "german": "Das Netz ist in der Nähe der Verrundung zu grob.",
+    "type": "sentence",
+    "category": "Engineering Mode",
+    "level": "B2",
+    "tags": ["FEM", "meshing"],
+    "alternatives_en": ["The mesh near the fillet is too coarse."],
+    "explanation": "'coarse' = grob (Netz), Gegenteil: 'fine'.",
+    "source": "sample"
+  },
+  {
+    "id": "sample-003",
+    "english": "to make a suggestion",
+    "german": "einen Vorschlag machen",
+    "type": "correction",
+    "common_mistake": "to do a suggestion",
+    "explanation": "Kollokation: make a suggestion / make a decision / make a mistake.",
+    "categories": ["Business English", "Meeting Mode"],
+    "level": "B1",
+    "examples": [
+      { "en": "May I make a suggestion?", "de": "Darf ich einen Vorschlag machen?" }
+    ]
+  },
+  {
+    "english": "Keep your arms up on defence.",
+    "german": "Halte in der Abwehr die Arme oben.",
+    "alternatives_en": ["Keep your arms up on defense."],
+    "category": "Handball Mode",
+    "level": "A2",
+    "type": "sentence"
+  }
+]
