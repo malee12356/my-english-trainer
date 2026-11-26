@@ -172,6 +172,11 @@ export interface Settings {
   backupReminderDays: number;
   lastBackupAt?: string;
   lastMode?: { topic: string; method: Method | 'auto'; at: string };
+  /**
+   * Consent for browser speech recognition. The platform recogniser (Apple /
+   * Google) may process the audio on its servers. undefined = not asked yet.
+   */
+  sttConsent?: 'granted' | 'denied';
   onboarded: boolean;
 }
 

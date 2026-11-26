@@ -11,6 +11,8 @@ export interface MethodInfo {
   status: 'ready' | 'planned';
   phase?: number;
   needsTts?: boolean;
+  /** Needs speech recognition (API + internet + consent). */
+  needsStt?: boolean;
 }
 
 export const METHODS: MethodInfo[] = [
@@ -19,7 +21,7 @@ export const METHODS: MethodInfo[] = [
   { id: 'gapfill', emoji: '🧩', de: 'Lückentext', en: 'Gap Fill', descDe: 'Fehlendes Wort im Beispielsatz ergänzen', descEn: 'Fill in the missing word', status: 'ready' },
   { id: 'builder', emoji: '🧱', de: 'Satzbau', en: 'Sentence Builder', descDe: 'Satz aus Wörtern zusammensetzen', descEn: 'Build the sentence from words', status: 'ready' },
   { id: 'listening', emoji: '🎧', de: 'Listening', en: 'Listening', descDe: 'Nur hören, verstehen, mitschreiben', descEn: 'Listen only, understand, write', status: 'ready', needsTts: true },
-  { id: 'speaking', emoji: '🎙️', de: 'Speaking', en: 'Speaking', descDe: 'Übersetzung sprechen, Text wird erkannt', descEn: 'Say the translation, speech is recognised', status: 'planned', phase: 2 },
+  { id: 'speaking', emoji: '🎙️', de: 'Speaking', en: 'Speaking', descDe: 'Übersetzung sprechen, Text wird erkannt', descEn: 'Say the translation, speech is recognised', status: 'ready', needsStt: true },
   { id: 'pronunciation', emoji: '👄', de: 'Aussprache', en: 'Pronunciation', descDe: 'Nachsprechen, aufnehmen, vergleichen', descEn: 'Repeat, record, compare', status: 'planned', phase: 2 },
   { id: 'freespeaking', emoji: '💬', de: 'Free Speaking', en: 'Free Speaking', descDe: 'Frei antworten, Transkript für ChatGPT', descEn: 'Answer freely, transcript for ChatGPT', status: 'planned', phase: 3 },
 ];

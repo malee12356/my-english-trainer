@@ -40,7 +40,7 @@ test('topic modes are selectable and planned methods are transparently disabled'
   await page.goto('/#/learn');
   await page.getByRole('button', { name: /Engineering Mode/ }).click();
   await page.getByRole('radio', { name: /Karteikarten/ }).click();
-  await expect(page.getByRole('radio', { name: /^Speaking/ })).toBeDisabled();
+  await expect(page.getByRole('radio', { name: /^Aussprache/ })).toBeDisabled();
   await expect(page.getByRole('radio', { name: /Phase 2/ }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: /Driving Mode/ })).toBeDisabled();
   await page.getByRole('button', { name: /Starten · \d+ Übungen/ }).click();

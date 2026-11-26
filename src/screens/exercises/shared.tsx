@@ -14,6 +14,8 @@ export interface ExerciseProps {
   pool: Item[];
   settings: Settings;
   onDone: (grade: Grade, given?: string) => void;
+  /** Switch this task to a typing exercise (e.g. speech recognition unavailable). */
+  onFallback?: () => void;
 }
 
 export function DiffView({ diff, label }: { diff: DiffToken[]; label: string }) {

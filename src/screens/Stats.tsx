@@ -36,7 +36,7 @@ export function Stats() {
     for (let d = calStart; d < addDays(startOfDay(now), 7 - ((now.getDay() + 6) % 7)); d = addDays(d, 1)) {
       cal.push({ day: dayKey(d), n: perDay.get(dayKey(d)) ?? 0, future: d > now });
     }
-    const speechLogs = snap.logs.filter((l) => l.skill === 'speaking');
+    const speechLogs = logsInRange.filter((l) => l.skill === 'speaking');
     return {
       sum, days, logsInRange, cal,
       streakNow: sum.streak,
@@ -51,6 +51,8 @@ export function Stats() {
       perCat,
       newLearned: logsInRange.filter((l) => l.isNew).length,
       speechCount: speechLogs.length,
+      speechCorrect: speechLogs.filter((l) => l.correct).length,
+      speechFirstTry: speechLogs.filter((l) => l.grade >= 3).length,
     };
   }, [snap, range, now]);
 
@@ -161,9 +163,18 @@ export function Stats() {
 
       <h2 className="section-title">{L('Sprechen & Aussprache', 'Speaking & pronunciation')}</h2>
       <div className="card small muted">
-        {data.speechCount > 0
-          ? L(`${data.speechCount} Sprechübungen erfasst.`, `${data.speechCount} speaking exercises recorded.`)
-          : L('Noch keine Daten – Sprech- und Ausspracheübungen folgen in Phase 2. Angezeigt wird dann nur, ob die Spracherkennung die Wörter erkannt hat – keine erfundene Lautbewertung.', 'No data yet – speaking and pronunciation exercises follow in phase 2. Only recognition results will be shown, no invented phoneme scores.')}
+        {data.speechCount > 0 ? (
+          <>
+            <div className="grid-3" style={{ color: 'var(--text)' }}>
+              <div className="stat"><span className="value" style={{ fontSize: 22 }}>{data.speechCount}</span><span className="label">{L('Sprechübungen', 'speaking exercises')}</span></div>
+              <div className="stat"><span className="value" style={{ fontSize: 22 }}>{Math.round((data.speechCorrect / data.speechCount) * 100)}%</span><span className="label">{L('richtig erkannt', 'recognised correctly')}</span></div>
+              <div className="stat"><span className="value" style={{ fontSize: 22 }}>{data.speechFirstTry}</span><span className="label">{L('beim 1. Versuch', 'first attempt')}</span></div>
+            </div>
+            <p style={{ margin: '10px 0 0' }}>{L('Gemessen wird, ob die Spracherkennung die erwarteten Wörter erkannt hat – keine Bewertung der Aussprache.', 'Measured: whether speech recognition recognised the expected words – not a pronunciation score.')}</p>
+          </>
+        ) : (
+          L('Im Zeitraum keine Sprechübungen. Angezeigt wird nur, ob die Spracherkennung die Wörter erkannt hat – keine erfundene Lautbewertung.', 'No speaking exercises in this range. Only recognition results are shown, no invented phoneme scores.')
+        )}
       </div>
 
       <p className="tiny muted mt">

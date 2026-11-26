@@ -30,8 +30,8 @@ export const SECONDS_PER_TASK: Record<Method, number> = {
 };
 const NEW_ITEM_EXTRA_SEC = 10;
 
-/** Methods available today (Phase 1/2). Speech-input methods are added once implemented. */
-export const PLANNABLE_METHODS: Method[] = ['flashcards', 'writing', 'gapfill', 'builder', 'listening'];
+/** Methods available today. Speaking only in fixed-method mode (never auto-planned, see ARCHITECTURE.md). */
+export const PLANNABLE_METHODS: Method[] = ['flashcards', 'writing', 'gapfill', 'builder', 'listening', 'speaking'];
 
 export interface PlanOptions {
   topic: string; // 'all' | 'weakness' | category id
@@ -42,6 +42,8 @@ export interface PlanOptions {
   newIntroducedToday: number;
   flashcardDirection: Direction | 'random';
   ttsAvailable: boolean;
+  /** Speech recognition usable right now (API present and online). Default false. */
+  sttAvailable?: boolean;
   rnd?: () => number;
 }
 
@@ -161,7 +163,7 @@ export function builderSource(item: Item): { sentence: string; german?: string }
   return null;
 }
 
-export function eligible(item: Item, method: Method, ttsAvailable: boolean): boolean {
+export function eligible(item: Item, method: Method, ttsAvailable: boolean, sttAvailable = false): boolean {
   switch (method) {
     case 'gapfill':
       return gapSource(item) !== null;
@@ -169,6 +171,8 @@ export function eligible(item: Item, method: Method, ttsAvailable: boolean): boo
       return builderSource(item) !== null;
     case 'listening':
       return ttsAvailable;
+    case 'speaking':
+      return sttAvailable && item.english.length <= 200;
     case 'flashcards':
     case 'writing':
       return true;
@@ -248,7 +252,7 @@ export function planSession(items: Item[], progress: ProgressIndex, o: PlanOptio
   const fixed = (item: Item): { method: Method; direction: Direction; skill: Skill } | null => {
     if (auto) return null;
     const m = o.method as Method;
-    if (!eligible(item, m, o.ttsAvailable)) return null;
+    if (!eligible(item, m, o.ttsAvailable, o.sttAvailable)) return null;
     const direction = m === 'flashcards' ? pickDirection() : m === 'listening' ? 'en-de' : 'de-en';
     const t = taskFor(item, m, direction, false, false);
     return { method: m, direction, skill: t.skill };

@@ -25,8 +25,9 @@ Legende: ✅ umgesetzt · 🟡 teilweise/vorbereitet · ⬜ offen · 🔒 nur na
 - ✅ Writing Mode (Alternativen, Tippfehler, Satzzeichen, farbige Fehler)
 - ✅ Satzübungen (Satzbau) und Lückentexte (3 Stufen)
 - ✅ Listening Mode (Auswahl & Diktat, Tempo, Wiederholen)
-- 🟡 Speech-to-Text: Fähigkeitserkennung + `recognizeOnce()` vorbereitet, UI fehlt
-- ⬜ Speaking Mode (DE anzeigen → EN sprechen → Vergleich, Wiederholung)
+- ✅ Speech-to-Text (Web Speech API) mit Einwilligung, Fehlerbehandlung und Schreib-Fallback (v0.2.0)
+- ✅ Speaking Mode (DE anzeigen → EN sprechen → Vergleich, bis zu 3 Versuche) (v0.2.0)
+- ⬜ Speaking in automatischen Einheiten (erst nach erfolgreichem iPhone-Test, siehe TEST_PLAN I)
 - ⬜ Pronunciation Mode (vorlesen, aufnehmen, anhören, erkannte Wörter markieren – ohne erfundene Lautbewertung)
 - ⬜ Eigene Sprachaufnahmen (nur im Speicher; dauerhaft nur mit Zustimmung)
 - ⬜ Test auf echtem iPhone: Spracherkennung im installierten PWA-Modus, offline

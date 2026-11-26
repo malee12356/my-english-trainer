@@ -10,7 +10,9 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-26):** Typecheck ✅ · 65/65 Unit-/Integrationstests ✅ · 21/21 E2E-Tests ✅ · Build ✅ (Precache 24 Dateien).
+**Letzter Lauf (2026-11-26, v0.2.0):** Typecheck ✅ · 80/80 Unit-/Integrationstests ✅ · 25/25 E2E-Tests ✅ · Build ✅.
+
+Speaking Mode automatisiert: Auswertung (Kurzformen, Zahlen, Alternativen, Versuche), Erkennungs-Wrapper mit simulierter Engine (Fehlercodes, Start-Timeout, Abbruch), Planer (nur bei verfügbarer Erkennung, nie automatisch); E2E mit simulierter Erkennung: Einwilligung vor erstem Mikrofonzugriff, richtige/falsche Antwort mit zweitem Versuch, Ablehnen → Schreiben, Berechtigungsfehler → Schreiben, deaktiviert ohne API bzw. offline.
 
 ### Bewusst nicht automatisiert
 - **Service-Worker-Update-Ablauf** (zwei Builds nacheinander) – manuell, siehe unten.
@@ -62,6 +64,16 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 ### G. Update ohne Datenverlust
 - [ ] G1 Nach einem neuen Deployment App öffnen → Banner „Neue Version verfügbar“ → Aktualisieren
 - [ ] G2 Version unter Info gestiegen, Vokabeln/Fortschritt/Einstellungen unverändert
+
+### I. Speaking Mode (v0.2.0) – auf dem iPhone besonders wichtig
+- [ ] I1 Lernen → Speaking wählen → Start. Erster Tipp auf das Mikrofon zeigt die Einwilligung; nach „Zustimmen“ erneut tippen
+- [ ] I2 **In Safari** (nicht installiert): iOS fragt nach Mikrofon/Spracherkennung → erlauben → einen Satz sprechen → wird erkannt?
+- [ ] I3 **Als installierte App** (Home-Bildschirm): dasselbe – funktioniert die Erkennung? Falls nein: welche Meldung erscheint? (Ergebnis in #2 notieren)
+- [ ] I4 Falsche Antwort → „Nochmal sprechen“ → zweiter Versuch wird gewertet; Lösung erst danach sichtbar
+- [ ] I5 Flugmodus → Speaking ist in „Lernen“ deaktiviert („Benötigt eine Internetverbindung“)
+- [ ] I6 Mikrofon in iOS-Einstellungen verweigern → verständliche Meldung + „Stattdessen schreiben“ funktioniert
+- [ ] I7 Während/nach der Übung: orangefarbener Mikrofon-Punkt in der Statusleiste verschwindet, sobald die Erkennung endet
+- [ ] I8 Mit Bluetooth-Headset: Erkennung über Headset-Mikrofon
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch
