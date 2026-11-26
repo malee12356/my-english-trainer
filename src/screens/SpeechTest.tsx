@@ -2,12 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../state';
 import { detectSpeechCapabilities, recognitionCtor } from '../speech/capabilities';
 import { RecognitionError, startRecognition, type RecognitionHandle } from '../speech/recognition';
+import { audioSessionSupported, currentAudioSession } from '../speech/audioSession';
+import { chosenVoice, englishVoices, speak, ttsSupported } from '../speech/tts';
 import { NavBar } from '../ui/components';
 import { copyText } from '../ui/files';
 
 /** Diagnostics: shows exactly which events the device's speech recognition reports. */
 export function SpeechTestScreen() {
-  const { L, settings, updateSettings, toast } = useApp();
+  const { L, settings, updateSettings, toast, voices } = useApp();
+  const [ttsLog, setTtsLog] = useState<string[]>([]);
+  const [ttsOutcome, setTtsOutcome] = useState('');
   const caps = detectSpeechCapabilities();
   const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
@@ -26,6 +30,8 @@ export function SpeechTestScreen() {
     `online: ${caps.online ? L('ja', 'yes') : L('nein', 'no')}`,
     `${L('Sprache', 'language')}: ${settings.accent}`,
     `${L('Zustimmung', 'consent')}: ${settings.sttConsent ?? L('nicht gefragt', 'not asked')}`,
+    `TTS: ${ttsSupported() ? L('ja', 'yes') : L('nein', 'no')} · ${L('englische Stimmen', 'English voices')}: ${englishVoices(voices).length} · ${L('Stimme', 'voice')}: ${chosenVoice(settings.voiceURI, voices)?.name ?? L('System', 'system')}`,
+    `Audio Session API: ${audioSessionSupported() ? currentAudioSession() : L('nicht vorhanden', 'not available')}`,
     `UA: ${navigator.userAgent}`,
   ];
 
@@ -50,11 +56,21 @@ export function SpeechTestScreen() {
     }
   };
 
-  const report = [...env, '', ...log, '', outcome].join('\n');
+  const testSpeech = async () => {
+    setTtsLog([]);
+    setTtsOutcome('');
+    const t = performance.now();
+    const add = (name: string, detail?: string) => setTtsLog((l) => [...l, `${String(Math.round(performance.now() - t)).padStart(5)} ms  tts ${name}${detail ? `: ${detail}` : ''}`]);
+    // called synchronously from the tap → allowed on iOS
+    const r = await speak('Could you clarify this point, please?', { lang: settings.accent, rate: settings.rate, voice: chosenVoice(settings.voiceURI, voices), onEvent: add });
+    setTtsOutcome(r.status === 'ended' && r.started ? L('✅ Vorlesen gestartet und beendet – nichts gehört? Stummschalter/Lautstärke prüfen.', '✅ Speech started and ended – heard nothing? Check silent switch/volume.') : `❌ ${r.status}${r.error ? ` (${r.error})` : ''}`);
+  };
+
+  const report = [...env, '', ...log, '', outcome, '', ...ttsLog, ttsOutcome].join('\n');
 
   return (
     <main className="page">
-      <NavBar title={L('Spracherkennung testen', 'Test speech recognition')} back="/settings" />
+      <NavBar title={L('Sprache testen', 'Test speech')} back="/settings" />
       <div className="stack">
         <p className="small muted" style={{ margin: 0 }}>
           {L('Starte den Test, sprich einen kurzen englischen Satz (z. B. „Could you clarify this point?“) und schick bei Problemen einen Screenshot des Protokolls.', 'Start the test, say a short English sentence and send a screenshot of the log if something fails.')}
@@ -70,6 +86,8 @@ export function SpeechTestScreen() {
           </button>
         )}
         {outcome && <div className={`banner ${outcome.startsWith('✅') ? 'ok' : 'error'} break`} role="status">{outcome}</div>}
+        <button className="btn block secondary" onClick={testSpeech} disabled={!ttsSupported()}>{L('Vorlesen testen', 'Test speech output')}</button>
+        {ttsOutcome && <div className={`banner ${ttsOutcome.startsWith('✅') ? 'ok' : 'error'} break small`} role="status">{ttsOutcome}</div>}
         <pre className="prompt" aria-label={L('Protokoll', 'Log')}>{report}</pre>
         <button className="btn block secondary" onClick={async () => toast((await copyText(report)) ? L('Protokoll kopiert', 'Log copied') : L('Kopieren nicht möglich', 'Copy failed'))}>
           {L('Protokoll kopieren', 'Copy log')}
@@ -81,6 +99,7 @@ export function SpeechTestScreen() {
             <li>{L('Englische Tastatur hinzufügen (Einstellungen → Allgemein → Tastatur → Tastaturen)', 'Add an English keyboard')}</li>
             <li>{L('Einstellungen → Datenschutz & Sicherheit → Mikrofon bzw. Spracherkennung: Safari erlaubt', 'Privacy → Microphone / Speech Recognition: allowed for Safari')}</li>
             <li>{L('Zum Vergleich denselben Test in Safari (nicht installiert) ausführen', 'Compare: run the same test in Safari (not installed)')}</li>
+            <li>{L('Kein Ton beim Vorlesen: Stummschalter/Action-Button, Lautstärke, Bluetooth-Verbindung prüfen', 'No sound: check silent switch, volume, Bluetooth')}</li>
           </ul>
         </div>
       </div>

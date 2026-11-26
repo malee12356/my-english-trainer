@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-26, v0.2.1):** Typecheck ✅ · 84/84 Unit-/Integrationstests ✅ · 28/28 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-26, v0.2.2):** Typecheck ✅ · 92/92 Unit-/Integrationstests ✅ · 31/31 E2E-Tests ✅ · Build ✅.
 
 Speaking Mode automatisiert: Auswertung (Kurzformen, Zahlen, Alternativen, Versuche), Erkennungs-Wrapper mit simulierter Engine (Fehlercodes, Start-Timeout, Abbruch), Planer (nur bei verfügbarer Erkennung, nie automatisch); E2E mit simulierter Erkennung: Einwilligung vor erstem Mikrofonzugriff, richtige/falsche Antwort mit zweitem Versuch, Ablehnen → Schreiben, Berechtigungsfehler → Schreiben, deaktiviert ohne API bzw. offline.
 
@@ -48,7 +48,9 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] D2 Einstellungen: British/American umschalten, Stimme wählen, Tempo ändern → hörbar
 - [ ] D3 Über Bluetooth (Auto/Kopfhörer) hörbar
 - [ ] D4 Im Flugmodus: Sprachausgabe funktioniert weiter (Systemstimme)
-- [ ] D5 Stummschalter/Lautstärke beachten; Verhalten notieren
+- [ ] D5 **Stummschalter an**: Wird trotzdem vorgelesen (Audio-Sitzung „Wiedergabe“, iOS 17+)? Ergebnis notieren
+- [ ] D7 Nach einer Speaking-Übung: Vorlesen kommt über den Lautsprecher, nicht leise über die Hörmuschel
+- [ ] D8 Einstellungen → Sprache testen → „Vorlesen testen“: Protokoll zeigt `start` und `end`
 - [ ] D6 Bildschirm sperren während Ausgabe → Ausgabe stoppt (erwartete iOS-Grenze, dokumentieren)
 
 ### E. Offline & Persistenz

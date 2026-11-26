@@ -14,6 +14,7 @@
  *   audio event counts as started.
  */
 import { recognitionCtor } from './capabilities';
+import { setAudioSession } from './audioSession';
 
 export type RecognitionErrorCode = 'unsupported' | 'denied' | 'network' | 'no-speech' | 'no-mic' | 'aborted' | 'language' | 'failed';
 
@@ -182,6 +183,7 @@ export function startRecognition(lang: string, opts: RecognitionOptions = {}): R
     }
   }, opts.startTimeoutMs ?? 15_000));
   try {
+    setAudioSession('auto'); // after speech output ("playback") the microphone must be usable again
     log('start-called', lang);
     r.start();
   } catch (err) {

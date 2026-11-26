@@ -8,6 +8,7 @@
  * - Voices are the iOS system voices (Settings → Accessibility → Spoken Content).
  */
 import type { Accent } from '../domain/types';
+import { setAudioSession } from './audioSession';
 
 export function ttsSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
@@ -61,33 +62,89 @@ export interface SpeakOptions {
   voice?: SpeechSynthesisVoice;
 }
 
-/** Speak a text; resolves when finished (or immediately if unsupported). */
-export function speak(text: string, o: SpeakOptions): Promise<'ended' | 'error' | 'unsupported'> {
-  if (!ttsSupported() || !text.trim()) return Promise.resolve('unsupported');
+export interface SpeakResult {
+  status: 'ended' | 'error' | 'unsupported';
+  /** SpeechSynthesisErrorEvent.error, e.g. "not-allowed", "interrupted", "synthesis-failed". */
+  error?: string;
+  /** Whether the engine reported that it actually started speaking. */
+  started: boolean;
+}
+
+// Keep a strong reference: WebKit may garbage-collect a running utterance and never fire onend.
+let current: SpeechSynthesisUtterance | null = null;
+
+/**
+ * Speak a text; resolves when finished (or immediately if unsupported).
+ *
+ * iOS notes:
+ * - must be called synchronously inside a tap handler for the first utterance
+ *   → no awaits/timeouts before synth.speak();
+ * - cancel() immediately followed by speak() can drop the utterance in WebKit
+ *   → only cancel when something is actually playing;
+ * - without an explicitly chosen voice only `lang` is set, so iOS uses the
+ *   installed system voice (some listed voices are not usable from the web and stay silent);
+ * - the audio session is switched to "playback" (loudspeaker, also after microphone use).
+ */
+export function speak(text: string, o: SpeakOptions & { onEvent?: (name: string, detail?: string) => void }): Promise<SpeakResult> {
+  if (!ttsSupported() || !text.trim()) return Promise.resolve({ status: 'unsupported', started: false });
+  const log = o.onEvent ?? (() => undefined);
   return new Promise((resolve) => {
     const synth = window.speechSynthesis;
+    setAudioSession('playback');
     const u = new SpeechSynthesisUtterance(text);
     u.lang = o.voice?.lang ?? o.lang;
     if (o.voice) u.voice = o.voice;
     u.rate = Math.min(2, Math.max(0.5, o.rate ?? 1));
+    u.volume = 1;
     let settled = false;
-    const finish = (r: 'ended' | 'error') => {
+    let started = false;
+    const finish = (r: SpeakResult) => {
       if (settled) return;
       settled = true;
       clearTimeout(guard);
+      if (current === u) current = null;
       resolve(r);
     };
-    u.onend = () => finish('ended');
-    u.onerror = () => finish('error');
+    u.onstart = () => {
+      started = true;
+      log('start');
+    };
+    u.onend = () => {
+      log('end');
+      finish({ status: 'ended', started: true });
+    };
+    u.onerror = (e) => {
+      const err = (e as SpeechSynthesisErrorEvent).error;
+      log('error', err);
+      // "interrupted"/"canceled" = we stopped it ourselves → not a failure
+      if (err === 'interrupted' || err === 'canceled') finish({ status: 'ended', started });
+      else finish({ status: 'error', error: err, started });
+    };
     // Safety net: some engines never fire onend (e.g. interrupted by the OS).
-    const guard = setTimeout(() => finish('ended'), Math.max(4000, text.length * 180 / (u.rate || 1)));
-    synth.cancel();
+    const guard = setTimeout(() => {
+      log('timeout', started ? 'no end event' : 'never started');
+      finish(started ? { status: 'ended', started } : { status: 'error', error: 'no-start', started });
+    }, Math.max(5000, (text.length * 180) / (u.rate || 1)));
+    if (synth.speaking || synth.pending) synth.cancel();
+    if (synth.paused) synth.resume();
+    current = u;
+    log('speak-called', `${u.lang}${o.voice ? ` · ${o.voice.name}` : ' · system voice'}`);
     synth.speak(u);
   });
 }
 
 export function stopSpeaking(): void {
-  if (ttsSupported()) window.speechSynthesis.cancel();
+  if (!ttsSupported()) return;
+  const synth = window.speechSynthesis;
+  if (synth.speaking || synth.pending) synth.cancel();
+}
+
+/**
+ * The voice to use for English output: only an explicitly chosen voice.
+ * Otherwise undefined → iOS/the browser uses its default voice for the language.
+ */
+export function chosenVoice(voiceURI: string | undefined, voices: SpeechSynthesisVoice[] = voicesCache): SpeechSynthesisVoice | undefined {
+  return voiceURI ? englishVoices(voices).find((v) => v.voiceURI === voiceURI) : undefined;
 }
 
 export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));

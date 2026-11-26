@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { acceptedAnswers, checkAnswer, type CheckResult } from '../../domain/answerCheck';
 import { shuffle, tokenize } from '../../domain/text';
 import { useApp } from '../../state';
-import { pickVoice, speak } from '../../speech/tts';
+import { chosenVoice, speak } from '../../speech/tts';
 import { IconPlay } from '../../ui/icons';
 import { distractors, FeedbackBox, ItemExtras, type ExerciseProps } from './shared';
 
@@ -21,7 +21,7 @@ export function Listening({ item, settings, pool, onDone }: ExerciseProps) {
   const play = async (r = rate) => {
     setPlaying(true);
     plays.current++;
-    await speak(item.english, { lang: settings.accent, rate: r, voice: pickVoice(settings.accent, settings.voiceURI, voices) });
+    await speak(item.english, { lang: settings.accent, rate: r, voice: chosenVoice(settings.voiceURI, voices) });
     setPlaying(false);
   };
   useEffect(() => {
