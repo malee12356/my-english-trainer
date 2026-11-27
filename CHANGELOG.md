@@ -2,6 +2,15 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.4.1] – 2026-11-27
+
+### Behoben
+- Vorlesen auf dem iPhone ohne Ton (ohne Fehlermeldung) bei eingeschaltetem **Stummmodus**: Während des Vorlesens spielt die App gleichzeitig eine lokal erzeugte stille Audiodatei ab. iOS behandelt die Ausgabe dann als Medienwiedergabe, die auch im Stummmodus hörbar ist. Sie stoppt mit dem Ende der Ansage (auf dem Gerät zu prüfen).
+
+### Hinzugefügt
+- Der Lautsprecher-Knopf leuchtet und pulsiert, solange vorgelesen wird. So ist sichtbar, ob gerade gesprochen wird.
+- Diagnose „Vorlesen testen“ protokolliert zusätzlich die stille Wiedergabe (`unmute`).
+
 ## [0.4.0] – 2026-11-27
 
 ### Hinzugefügt – Kindermodus (Klasse 5–6)

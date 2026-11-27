@@ -1330,3 +1330,14 @@ pre.prompt {
   border: 0; border-radius: 22px; padding: 16px; cursor: pointer; font: inherit; color: inherit;
   box-shadow: var(--shadow);
 }
+
+/* speaker button while speaking: clearly visible feedback */
+.icon-btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  animation: speak-pulse 1s ease-in-out infinite;
+}
+@keyframes speak-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
+  50% { box-shadow: 0 0 0 8px var(--accent-soft); }
+}

@@ -118,6 +118,36 @@ describe('speak (iOS-safe behaviour)', () => {
   });
 });
 
+describe('silent-switch workaround', () => {
+  it('plays silent media while speaking and stops it afterwards', async () => {
+    const events: string[] = [];
+    class FakeAudio {
+      loop = false; preload = ''; currentTime = 0;
+      constructor(public src: string) { events.push('new'); }
+      setAttribute() {}
+      play() { events.push('play'); return Promise.resolve(); }
+      pause() { events.push('pause'); }
+    }
+    const g = globalThis as unknown as Record<string, unknown>;
+    g.Audio = FakeAudio;
+    (g.window as Record<string, unknown>).Audio = FakeAudio;
+    const origCreate = URL.createObjectURL;
+    URL.createObjectURL = () => 'blob:silent';
+    try {
+      const log: string[] = [];
+      await speak('Hello', { lang: 'en-GB', onEvent: (n, d) => log.push(`${n}${d ? ':' + d : ''}`) });
+      expect(events).toEqual(['new', 'play', 'pause']);
+      expect(log).toContain('unmute:playing');
+      // a second utterance reuses the element
+      await speak('Again', { lang: 'en-GB' });
+      expect(events).toEqual(['new', 'play', 'pause', 'play', 'pause']);
+    } finally {
+      URL.createObjectURL = origCreate;
+      delete g.Audio;
+    }
+  });
+});
+
 describe('chosenVoice', () => {
   it('returns only an explicitly chosen English voice', () => {
     expect(chosenVoice(undefined, voices)).toBeUndefined();

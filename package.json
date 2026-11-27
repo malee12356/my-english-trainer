@@ -1,7 +1,7 @@
 {
   "name": "personal-english-trainer",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "description": "Offline-first English learning PWA for German speakers (A2/B1 → B2).",
   "license": "UNLICENSED",
