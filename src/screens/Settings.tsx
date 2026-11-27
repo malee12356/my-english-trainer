@@ -5,11 +5,11 @@ import { DURATIONS } from '../domain/methods';
 import { useApp } from '../state';
 import { chosenVoice, englishVoices, speak, ttsSupported } from '../speech/tts';
 import { ListLink, Segmented, Sheet, Toggle, useConfirm } from '../ui/components';
-import { PinUnlockSheet, SetPinSheet, SetupCodeSheet, SetupGeneratorSheet } from './parent/ParentUI';
+import { PinUnlockSheet, SetPinSheet, SetupCodeSheet, SetupGeneratorSheet, ShareCurrentSetupSheet } from './parent/ParentUI';
 
 export function SettingsScreen() {
   const { L, settings, updateSettings, voices, caps, bump, toast, parentLocked, lockParent } = useApp();
-  const [sheet, setSheet] = useState<null | 'unlock' | 'pin' | 'code' | 'generator'>(null);
+  const [sheet, setSheet] = useState<null | 'unlock' | 'pin' | 'code' | 'generator' | 'share'>(null);
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
   const [packs, setPacks] = useState<Record<StarterPack, { count: number; practised: number }> | null>(null);
@@ -114,7 +114,10 @@ export function SettingsScreen() {
           </>
         )}
         <button className="btn small ghost" onClick={() => setSheet('code')}>🔑 {L('Einrichtungscode einfügen', 'Paste setup code')}</button>
-        {settings.profile !== 'kid' && <button className="btn small ghost" onClick={() => setSheet('generator')}>📲 {L('Schüler-App für mein Kind einrichten', "Set up my child's pupil app")}</button>}
+        {!parentLocked && settings.profile === 'kid' && settings.parentLock && (
+          <button className="btn block" onClick={() => setSheet('share')}>💬 {L('Diese Einrichtung per WhatsApp senden', 'Send this setup via WhatsApp')}</button>
+        )}
+        {!parentLocked && <button className="btn small ghost" onClick={() => setSheet('generator')}>📲 {L('Schüler-App für mein Kind einrichten (per WhatsApp)', "Set up my child's pupil app (via WhatsApp)")}</button>}
         <span className="tiny muted">{L('Schüler: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Die Klassenstufe steuert ChatGPT-Prompt und Niveau. Lernfortschritt bleibt erhalten. Vokabelpakete: unten unter „Daten & Import“.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept. Kids vocabulary: below under “Data & import”.')}</span>
         <span className="tiny muted">Version {__APP_VERSION__}</span>
       </div>
@@ -223,6 +226,7 @@ export function SettingsScreen() {
       <SetPinSheet open={sheet === 'pin'} onClose={() => setSheet(null)} />
       <SetupCodeSheet open={sheet === 'code'} onClose={() => setSheet(null)} />
       <SetupGeneratorSheet open={sheet === 'generator'} onClose={() => setSheet(null)} />
+      <ShareCurrentSetupSheet open={sheet === 'share'} onClose={() => setSheet(null)} />
       {dialog}
     </main>
   );

@@ -101,6 +101,13 @@ describe('database & import integration', () => {
   });
 });
 
+describe('settings', () => {
+  it('concurrent changes do not overwrite each other', async () => {
+    await Promise.all([saveSettings({ kidGrade: '7-8' }), saveSettings({ minutesPerWord: 2 }), saveSettings({ challengeWords: 15 })]);
+    expect(await getSettings()).toMatchObject({ kidGrade: '7-8', minutesPerWord: 2, challengeWords: 15 });
+  });
+});
+
 describe('default vocabulary on first start', () => {
   it('loads once into an empty app and never again, also not after deleting', async () => {
     const added = await autoLoadStarterOnFirstStart();
