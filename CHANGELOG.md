@@ -11,6 +11,9 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionier
 - Der Lautsprecher-Knopf leuchtet und pulsiert, solange vorgelesen wird. So ist sichtbar, ob gerade gesprochen wird.
 - Diagnose „Vorlesen testen“ protokolliert zusätzlich die stille Wiedergabe (`unmute`).
 
+### Geändert
+- Profilwahl (Erwachsene / Kinder) steht jetzt ganz oben in den Einstellungen, mit Versionsanzeige.
+
 ## [0.4.0] – 2026-11-27
 
 ### Hinzugefügt – Kindermodus (Klasse 5–6)

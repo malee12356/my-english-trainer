@@ -39,6 +39,18 @@ export function SettingsScreen() {
     <main className="page">
       <h1 className="large-title">{L('Einstellungen', 'Settings')}</h1>
 
+      <h2 className="section-title">{L('Profil – wer lernt?', 'Profile – who is learning?')}</h2>
+      <div className="card stack" style={{ gap: 10 }}>
+        <Segmented
+          label={L('Profil', 'Profile')}
+          value={settings.profile ?? 'adult'}
+          onChange={(v) => updateSettings({ profile: v, profileChosen: true })}
+          options={[{ value: 'adult', label: L('Erwachsene', 'Adults') }, { value: 'kid', label: L('Kinder (Kl. 5–6) 🤖', 'Kids (years 5–6) 🤖') }]}
+        />
+        <span className="tiny muted">{L('Kinder: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Lernfortschritt bleibt erhalten. Kinder-Vokabeln: unten unter „Daten & Import“.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept. Kids vocabulary: below under “Data & import”.')}</span>
+        <span className="tiny muted">Version {__APP_VERSION__}</span>
+      </div>
+
       <h2 className="section-title">{L('Daten & Import', 'Data & import')}</h2>
       <div className="list">
         <ListLink to="/prompt" icon="🤖" title={L('ChatGPT-Import', 'ChatGPT import')} subtitle={L('Prompt kopieren, JSON zurück importieren', 'Copy prompt, import JSON back')} />
@@ -95,16 +107,6 @@ export function SettingsScreen() {
 
       <h2 className="section-title">{L('Darstellung & Bedienung', 'Appearance & controls')}</h2>
       <div className="list">
-        <div className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-          <span>{L('Profil', 'Profile')}</span>
-          <Segmented
-            label={L('Profil', 'Profile')}
-            value={settings.profile ?? 'adult'}
-            onChange={(v) => updateSettings({ profile: v, profileChosen: true })}
-            options={[{ value: 'adult', label: L('Erwachsene', 'Adults') }, { value: 'kid', label: L('Kinder (Kl. 5–6) 🤖', 'Kids (years 5–6) 🤖') }]}
-          />
-          <span className="tiny muted">{L('Kinder: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Lernfortschritt bleibt erhalten.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept.')}</span>
-        </div>
         <div className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
           <span>{L('Design', 'Theme')}</span>
           <Segmented label={L('Design', 'Theme')} value={settings.theme} onChange={(v) => updateSettings({ theme: v })} options={[{ value: 'system', label: 'System' }, { value: 'light', label: L('Hell', 'Light') }, { value: 'dark', label: L('Dunkel', 'Dark') }]} />
