@@ -52,7 +52,7 @@ test('invalid JSON is reported, imported HTML is shown as plain text (no XSS)', 
   let dialog = false;
   page.on('dialog', async (d) => { dialog = true; await d.dismiss(); });
   await page.goto('/');
-  await importPasted(page, '[{"english": "broken"');
+  await importPasted(page, '[{"english": "broken", "german": ');
   await expect(page.getByRole('alert')).toContainText('Ungültiges JSON');
   await importPasted(page, JSON.stringify([{ english: '<img src=x onerror=alert(1)>', german: '<script>alert(2)</script>' }]));
   await page.getByRole('button', { name: 'Import bestätigen (1)' }).click();
@@ -113,4 +113,17 @@ test('ChatGPT message copied as a whole (Markdown escapes) is repaired and impor
   await expect(page.getByText(/automatisch repariert/)).toBeVisible();
   await page.getByRole('button', { name: 'Import bestätigen (1)' }).click();
   await expect(page.getByText("I can't really judge him because I'm no better myself.")).toBeVisible();
+});
+
+test('heavily damaged ChatGPT paste (typographic quotes, lost list brackets) is imported', async ({ page }) => {
+  const damaged = readFileSync(new URL('../fixtures/chatgpt-damaged-paste.txt', import.meta.url), 'utf8');
+  await page.goto('/');
+  await importPasted(page, damaged);
+  await expect(page.getByText('4 neu')).toBeVisible();
+  await expect(page.getByText('0 fehlerhaft')).toBeVisible();
+  await expect(page.getByText(/automatisch repariert/)).toBeVisible();
+  await page.getByRole('button', { name: 'Import bestätigen (4)' }).click();
+  await expect(page.getByRole('heading', { name: 'Vokabeln' })).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('carry on');
+  await expect(page.getByText('We can continue tomorrow.')).toBeVisible();
 });

@@ -2,6 +2,12 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.6.1] – 2026-11-27
+
+### Behoben
+- **Import aus der ChatGPT-App scheiterte mit „Unexpected token“**, wenn die ganze Nachricht kopiert wurde. Neben `\[ … \]` waren die Anführungszeichen typografisch (“ ”, gemischt mit ") und bei Listen fehlten die eckigen Klammern (`"tags": "a", "b", …`). Ein neuer toleranter Leser (`src/domain/looseJson.ts`) liest solche Texte jetzt. Fehlende Listenklammern werden ergänzt, Anführungszeichen innerhalb von Texten (z. B. „…“) bleiben erhalten.
+- Ein abgeschnittener Text wird so weit wie möglich gelesen; unvollständige Einträge erscheinen in der Vorschau als „fehlerhaft“. Echte Fehler zeigen eine Position statt „Unexpected token“.
+
 ## [0.6.0] – 2026-11-27
 
 ### Hinzugefügt – Spielzeit-Challenge (Schülerprofil)

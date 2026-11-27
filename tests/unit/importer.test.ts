@@ -51,7 +51,11 @@ describe('JSON import', () => {
   });
 
   it('flags invalid rows and broken JSON', () => {
-    expect(parseImport('[{"english": "x"').fatal).toMatch(/^json:/);
+    // a truncated paste is read as far as possible; the incomplete entry is flagged invalid
+    const cut = parseImport('[{"english": "x"');
+    expect(cut.fatal).toBeUndefined();
+    expect(cut.rows[0].errors).toContain('missing:german');
+    expect(parseImport('[{"english": "x", "german": ').fatal).toMatch(/^json:/);
     const r = parseImport('[{"english":"ok","german":"gut"},{"english":""},42,{"german":"nur deutsch"}]');
     expect(r.rows.map((x) => x.errors.length > 0)).toEqual([false, true, true, true]);
     expect(r.rows[1].errors).toContain('missing:english');
