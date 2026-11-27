@@ -112,7 +112,8 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] M6 Schülerprofil + PIN direkt in den Einstellungen eingerichtet → „Diese Einrichtung per WhatsApp senden“ ist sichtbar
 
 ### N. Units & Seiten (v0.8.0)
-- [ ] N1 Prompt mit „Vokabelliste (Foto/Datei)“ + 3–4 Fotos (Seite mit und ohne Unit-Überschrift) an ChatGPT → JSON enthält `unit` und `page`
+- [ ] N1 Prompt „📸 Nur aus meinen Fotos“ + 3–4 Fotos (Seite mit und ohne Unit-Überschrift) an ChatGPT → JSON enthält `unit` und `page` und **nur** Wörter von den Fotos (auch im Englisch-Projekt mit eigenen früheren Vokabeln)
+- [ ] N1b Vokabeln → Filter → „Importiert, ohne Unit“ zeigt nur importierte Wörter ohne Unit (keine Standardvokabeln)
 - [ ] N2 Import → Vokabelliste zeigt Unit und Seite; Seiten ohne Überschrift haben die richtige Unit
 - [ ] N3 „Hausaufgabe üben“ → Unit wählen → Anzahl stimmt → „Alle Wörter schreiben“
 - [ ] N4 Seiten von–bis (z. B. 196–198) → Anzahl stimmt → als Spielzeit-Challenge

@@ -19,7 +19,9 @@ ChatGPT gibt das JSON in einem **Codeblock** (dunkler Kasten) aus. Bitte den **K
 
 Mehrere Fotos auf einmal sind kein Problem. ChatGPT übernimmt Unit und Seite: Eine Seite ohne Unit-Überschrift gehört zur letzten Unit davor. In der App lassen sich die Wörter dann unter **„Hausaufgabe üben“** gezielt nach Unit oder Seiten (z. B. 196–198) wiederholen.
 
-Im Prompt „Vokabelliste (Foto/Datei)“ wählen, in ChatGPT ein Foto der Wörterliste anhängen und den Prompt senden. ChatGPT wandelt genau diese Einträge in das Importformat um.
+Im Prompt-Assistenten oben „📸 Nur aus meinen Fotos“ wählen, in ChatGPT die Fotos der Wörterliste an **dieselbe Nachricht** anhängen und den Prompt senden. Der Prompt verbietet ausdrücklich Wörter aus früheren Chats, dem ChatGPT-Gedächtnis oder anderen Projektdateien. Am zuverlässigsten ist ein **neuer Chat außerhalb des Englisch-Projekts** (oder ein „Temporärer Chat“), weil ChatGPT im Projekt den bisherigen Verlauf sieht.
+
+Sind doch fremde Wörter mitgekommen: Vokabeln → Filter → Unit „Importiert, ohne Unit“ → Auswählen → Alle → Löschen. Vor dem Löschen legt die App automatisch eine Kopie an.
 
 ## Der ChatGPT-Prompt
 

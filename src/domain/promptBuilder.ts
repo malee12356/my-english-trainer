@@ -15,9 +15,17 @@ export const CONTENT_KINDS: { id: ContentKind; de: string; en: string }[] = [
   { id: 'booklist', de: 'Vokabelliste (Foto/Datei)', en: 'Word list (photo/file)' },
 ];
 
-/** Content kinds offered per profile. */
+/** Content kinds offered per profile (the photo list is a separate mode, see `PromptOptions.mode`). */
 export function contentKindsFor(audience: 'adult' | 'kid') {
-  return CONTENT_KINDS.filter((k) => audience === 'adult' || k.id !== 'technical');
+  return CONTENT_KINDS.filter((k) => k.id !== 'booklist' && (audience === 'adult' || k.id !== 'technical'));
+}
+
+/** 'photos' = convert ONLY the attached photos; 'generate' = create new content. */
+export type PromptMode = 'photos' | 'generate';
+
+/** Mode of saved options; older saved options with the "booklist" kind count as photo mode. */
+export function promptMode(o: Pick<PromptOptions, 'mode' | 'kinds'>): PromptMode {
+  return o.mode ?? (o.kinds.includes('booklist') ? 'photos' : 'generate');
 }
 
 export interface PromptOptions {
@@ -31,6 +39,8 @@ export interface PromptOptions {
   audience?: 'adult' | 'kid';
   /** School grade band for the kids profile. */
   grade?: KidGrade;
+  /** Photo mode: only the attached photos, nothing from previous chats. */
+  mode?: PromptMode;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -97,6 +107,8 @@ const METHOD_TEXT: Record<PromptOptions['focusMethod'], string> = {
 };
 
 export function buildPrompt(o: PromptOptions): string {
+  if (promptMode(o) === 'photos') return buildPhotoPrompt(o);
+  o = { ...o, kinds: o.kinds.filter((k) => k !== 'booklist') };
   if (o.audience === 'kid') return buildKidPrompt(o);
   const topic = TOPIC_MODES.find((t) => t.id === o.topic);
   const topicLine = topic
@@ -119,7 +131,7 @@ What I need:
 ${kinds}
 - Prioritise words, phrases and structures that I was missing, used incorrectly or hesitated with in our past conversations.
 - Prefer complete, reusable sentences over isolated words, especially for meetings and technical discussions.
-- Do not include confidential company information, names of real colleagues, customers or children.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}${o.kinds.includes('booklist') ? `\n\n${BOOK_RULES}` : ''}
+- Do not include confidential company information, names of real colleagues, customers or children.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
 
 Output format – IMPORTANT:
 Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so I can copy it with the code block's copy button. Each entry:
@@ -137,9 +149,6 @@ Put the complete JSON array into ONE single code block marked as json (\`\`\`jso
   "common_mistake": "the wrong version I used (only for corrections)",
   "explanation": "short explanation in German why/when to use it (optional)",
   "tags": ["short", "keywords"],
-  "unit": "Unit 3 (only for school book / word list photos)",
-  "page": 196,
-  "book": "book title, if visible (optional)",
   "source": "chatgpt-project"
 }
 
@@ -178,7 +187,7 @@ What I need:
 ${kinds}
 - Prefer words and sentences that were difficult or wrong in our previous exercises.
 - Child-friendly content only. No names of real people, no addresses, no school names.
-- Explanations ("explanation") in short, simple German that a ${g.age}-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}${o.kinds.includes('booklist') ? `\n\n${BOOK_RULES}` : ''}
+- Explanations ("explanation") in short, simple German that a ${g.age}-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
 
 Output format – IMPORTANT:
 Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so it can be copied with the code block's copy button. Each entry:
@@ -194,9 +203,6 @@ Put the complete JSON array into ONE single code block marked as json (\`\`\`jso
   "alternatives_de": ["other correct German translations in THIS context only"],
   "common_mistake": "the wrong version (only for corrections)",
   "explanation": "very short explanation in simple German (optional)",
-  "unit": "Unit 3 (only for school book / word list photos)",
-  "page": 196,
-  "book": "book title, if visible (optional)",
   "source": "chatgpt-project"
 }
 
@@ -204,6 +210,56 @@ Rules:
 - "english" and "german" are required; leave out other fields instead of guessing.
 - For verbs write "to …" (e.g. "to read").
 - British English spelling (as in German school books); American spelling may go into "alternatives_en".
+- Use straight double quotes and valid JSON (no comments, no trailing commas).
+- Do not split the array into several code blocks.`;
+}
+
+/**
+ * Photo mode: convert ONLY the word list on the photos attached to this
+ * message. ChatGPT projects otherwise mix in vocabulary from earlier chats
+ * (e.g. the parent's own words when parent and child share a project).
+ */
+function buildPhotoPrompt(o: PromptOptions): string {
+  const kid = o.audience === 'kid';
+  const g = gradeInfo(o.grade);
+  const topics = kid ? KID_TOPICS : TOPIC_MODES.filter((t) => t.audience !== 'kid');
+  const topic = topics.find((t) => t.id === o.topic);
+  const categoryLine = topic
+    ? `Use "${topic.name}" as category for every entry.`
+    : `Category: the best fitting of ${topics.map((t) => `"${t.name}"`).join(', ')}.`;
+  return `Please turn the vocabulary list on the photo(s) attached to THIS message into an import file for my Personal English Trainer app${kid ? ` (pupil, school years ${g.years} in Germany)` : ''}.
+
+STRICT – only the photos:
+- Use ONLY the entries that are visible on the photo(s) attached to this message.
+- IGNORE everything else: earlier conversations, memory, other chats, other files and word lists in this project. Do NOT add any word from them – not even corrections or "difficult words".
+- Do not add extra or "useful" words of your own. No limit on the number: convert ALL entries on the photos, in the order of the list.
+- If an entry is unreadable, leave it out and name it below the code block.
+- If no photo is attached, do not create any entries – ask me for the photo instead.
+- Keep the book's spelling and translation in "english" and "german". Further correct translations may go into "alternatives_en" / "alternatives_de".
+- You may add a short example sentence${kid ? '' : ' and IPA'} for an entry, but never additional entries.
+- ${categoryLine}${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
+
+${BOOK_RULES}
+
+Output format – IMPORTANT:
+Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so it can be copied with the code block's copy button. Below the code block write one line: "<number> entries from pages <first>–<last>". Each entry:
+{
+  "english": "English word or phrase exactly as in the book",
+  "german": "German translation as in the book",
+  "type": "word | phrase | sentence",
+  "category": "${topics.map((t) => t.name).join(' | ')}",
+  "example_en": "short example sentence (optional)",
+  "example_de": "German translation of the example (optional)",
+  "alternatives_en": ["other correct English answers in THIS context only"],
+  "alternatives_de": ["other correct German translations in THIS context only"],
+  "unit": "Unit 3",
+  "page": 196,
+  "book": "book title, if visible (optional)",
+  "source": "book-photo"
+}
+
+Rules:
+- "english" and "german" are required; leave out other fields instead of guessing.${kid ? '\n- For verbs write "to …" (e.g. "to read"), as in the book.' : ''}
 - Use straight double quotes and valid JSON (no comments, no trailing commas).
 - Do not split the array into several code blocks.`;
 }

@@ -56,5 +56,31 @@ test('without units/pages the homework screen explains how to get them', async (
   await page.addInitScript(() => localStorage.setItem('pet.profile', 'kid'));
   await page.goto('/#/homework');
   await expect(page.getByText('Noch keine Units oder Seiten gespeichert')).toBeVisible();
-  await expect(page.getByRole('link', { name: /Zum ChatGPT-Prompt/ })).toBeVisible();
+  await page.getByRole('link', { name: /Zum ChatGPT-Prompt/ }).click();
+  await expect(page.getByRole('button', { name: /Nur aus meinen Fotos/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('pre.prompt')).toContainText('Use ONLY the entries that are visible on the photo(s)');
+});
+
+test('wrongly imported words without unit can be found and deleted at once', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('pet.skipStarter', '1');
+    localStorage.setItem('pet.profile', 'kid');
+  });
+  await page.goto('/');
+  await importPasted(page, JSON.stringify([...BOOK.slice(0, 2), { english: 'stakeholder', german: 'Interessengruppe' }, { english: 'deadline', german: 'Frist' }]));
+  await page.getByRole('button', { name: 'Import bestätigen (4)' }).click();
+  await page.goto('/#/vocab?unit=__none__');
+  await expect(page.getByText('stakeholder')).toBeVisible();
+  await expect(page.getByText('deadline')).toBeVisible();
+  await expect(page.getByText('pencil')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Auswählen' }).click();
+  await page.locator('.btn.small', { hasText: /^Alle$/ }).click();
+  await page.getByRole('button', { name: 'Löschen (2)' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Endgültig löschen' }).click();
+  await expect(page.getByText('Keine Treffer')).toBeVisible();
+  await page.goto('/#/vocab');
+  await page.reload();
+  await expect(page.getByText('pencil')).toBeVisible();
+  await expect(page.getByText('ruler')).toBeVisible();
+  await expect(page.getByText('stakeholder')).toHaveCount(0);
 });
