@@ -105,6 +105,7 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 - Maskottchen `src/ui/Robot.tsx`: reines SVG, Stimmungen und 5 Stufen, Animationen nur ohne „Bewegung reduzieren“.
 - Klassenstufen (`src/domain/grades.ts`): 5–6, 7–8, 9–10 mit Niveau, Grammatikthemen und eigenem Vokabelpaket (`source` = `starter-kids`, `starter-kids-7-8`, `starter-kids-9-10`). Mitgelieferte Pakete erkennt man an `origin = starter` + `source`; nur diese entfernt `removeStarterPack`.
 - Spielzeit-Challenge (`src/domain/challenge.ts`, Route `#/challenge`, Sitzung mit `?mode=challenge`): Auswahl `planChallenge` (schwach → unsicher → neu, nie „sicher“), strenger Übungsmodus (`strict`: kein Hinweis, keine Selbstkorrektur), keine Wiederholungsschleife, Belohnung nur für die erste Antwort je Wort (`earnsReward`). Ergebnis wird in der Sitzung gespeichert (`kind`, `rewardMinutes`). Teilen über Web Share API (PNG-Karte per Canvas + Text) oder `wa.me`-Link.
+- Eltern-PIN & Einrichtung (`src/domain/parental.ts`, `src/screens/parent/`): Sperrzustand im App-Kontext (`parentLocked`, 5 Minuten entsperrt), Fehlversuche in `localStorage` (`pet.pinFails`). Einrichtungscode wird eingefügt statt per Link geöffnet, weil iOS Links nie in der installierten Web-App öffnet (getrennter Speicher Safari ↔ Home-Bildschirm-App).
 - Test-/Entwickler-Schalter (nur `localStorage`, nicht in der UI): `pet.profile` = `adult`|`kid` beantwortet die Startfrage, `pet.skipStarter` = `1` lädt keine Standardvokabeln.
 
 ## Vorbereitet, nicht aktiv

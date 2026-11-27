@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.6.1):** Typecheck ✅ · 124/124 Unit-/Integrationstests ✅ · 44/44 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.7.0):** Typecheck ✅ · 131/131 Unit-/Integrationstests ✅ · 46/46 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -99,6 +99,13 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] L4 „Fortschritt teilen“ → iOS-Teilen-Menü → WhatsApp → Bild + Text kommen beim Empfänger an
 - [ ] L5 „Per WhatsApp senden“ öffnet WhatsApp mit vorausgefülltem Text
 - [ ] L6 Startseite zeigt „Heute schon X Minuten verdient“; Einstellungen: Wortanzahl/Minuten pro Wort ändern
+
+### M. Eltern-PIN & Einrichtung (v0.7.0)
+- [ ] M1 Eltern-iPhone: Einstellungen → „Schüler-App für mein Kind einrichten“ → Klasse, Regeln, PIN → „Per WhatsApp senden“
+- [ ] M2 Kinder-iPhone: App installieren und öffnen → „Einrichtungscode von den Eltern einfügen“ → WhatsApp-Nachricht kopiert → „Aus Zwischenablage einfügen“ → übernehmen
+- [ ] M3 Einstellungen zeigen „Von den Eltern eingestellt“; Profilwechsel und Backup-Wiederherstellung sind gesperrt
+- [ ] M4 Falsche PIN → Meldung; richtige PIN entsperrt; „Jetzt sperren“
+- [ ] M5 Neue Regeln (z. B. 2 Min/Wort) mit derselben PIN schicken → werden ohne PIN übernommen
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

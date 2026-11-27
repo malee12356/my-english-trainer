@@ -192,6 +192,8 @@ export interface Settings {
   /** Screen-time challenge: number of words and minutes per correct word. */
   challengeWords?: number;
   minutesPerWord?: number;
+  /** Parental lock (hash of the parent PIN). Locks profile/challenge settings, pack removal and restore. */
+  parentLock?: { v: 1; hash: string };
   onboarded: boolean;
 }
 

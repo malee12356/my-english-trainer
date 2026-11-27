@@ -57,7 +57,7 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (Erwachsene: `everyday`, 
 | `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct`, optional `kind = 'challenge'` + `rewardMinutes` (verdiente Spielzeit) |
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
-| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`, `kidGrade` = `5-6`/`7-8`/`9-10`, `challengeWords`, `minutesPerWord`) |
+| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`, `kidGrade` = `5-6`/`7-8`/`9-10`, `challengeWords`, `minutesPerWord`, `parentLock` = `{ v: 1, hash }` (PBKDF2-SHA-256 der Eltern-PIN)) |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 
@@ -96,3 +96,13 @@ Validierung vor Restore: Format-ID, Version ≤ unterstützt, alle Arrays vorhan
 ## 4. CSV-Export
 
 Spalten: `id, english, german, type, level, categories, tags, alternatives_en, alternatives_de, example_en, example_de, ipa, notes, common_mistake, explanation, source` (Listen mit `|`). Re-importierbar.
+
+## 5. Einrichtungscode (Eltern → Schüler-App)
+
+`PET1-` + base64url(JSON), Beispielinhalt:
+
+```json
+{ "v": 1, "profile": "kid", "grade": "5-6", "words": 20, "minutesPerWord": 1, "lock": { "v": 1, "hash": "<PBKDF2-SHA-256, 43 Zeichen base64url>" } }
+```
+
+Validierung: `grade` ∈ 5-6/7-8/9-10, `words` 5–50, `minutesPerWord` > 0 und ≤ 10, `hash` 40–60 Zeichen base64url. Die PIN selbst ist nie enthalten. Der Salt ist absichtlich fest, damit gleiche PINs gleiche Hashes ergeben und Folge-Codes derselben Eltern ohne PIN-Abfrage übernommen werden. Eine 4-stellige PIN ist auf dem Gerät ohnehin nicht gegen Durchprobieren zu schützen; sie ist eine Hürde im Haushalt, keine Sicherheitsgrenze.
