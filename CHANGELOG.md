@@ -2,6 +2,16 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.5.0] – 2026-11-27
+
+### Hinzugefügt
+- **Klassenstufen im Schülerprofil:** 5–6 (A1–A2), 7–8 (A2–B1), 9–10 (B1–B2). Wählbar beim ersten Start und jederzeit in den Einstellungen unter „Profil“. Die Stufe steuert den ChatGPT-Prompt (Niveau, Grammatikthemen, Alter für Erklärungen) und das geladene Vokabelpaket.
+- Eigene Standardvokabeln für **Klasse 7–8** und **Klasse 9–10** (je 45 Einträge: Schule & Beruf, Familie & Freunde, Alltag & Gesellschaft).
+- **Standardvokabeln entfernen:** Einstellungen → „Standardvokabeln entfernen …“ löscht mitgelieferte Pakete (Schüler oder Erwachsene) mit Bestätigung und Anzahl. Eigene Importe und selbst angelegte Einträge bleiben immer erhalten; die Antworthistorie bleibt für die Statistik.
+
+### Geändert
+- „Kinder“ heißt jetzt „Schüler“ (Profil für Klasse 5–10).
+
 ## [0.4.1] – 2026-11-27
 
 ### Behoben

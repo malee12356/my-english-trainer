@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.4.1):** Typecheck ✅ · 110/110 Unit-/Integrationstests ✅ · 40/40 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.5.0):** Typecheck ✅ · 114/114 Unit-/Integrationstests ✅ · 42/42 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -89,6 +89,8 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] K4 Tab „Erfolge“: Level, Robo, Abzeichen mit Fortschritt
 - [ ] K5 ChatGPT-Import: Prompt kopieren → in ChatGPT mit Foto der Vokabelliste senden → Codeblock kopieren → importieren
 - [ ] K6 Kopieren der **ganzen** ChatGPT-Nachricht → Import funktioniert mit Hinweis „automatisch repariert“
+- [ ] K7 Einstellungen → Profil → Klassenstufe wechseln → ChatGPT-Prompt nennt die neue Stufe
+- [ ] K8 Einstellungen → „Standardvokabeln entfernen …“ → Schüler-Vokabeln entfernen → eigene Importe bleiben
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

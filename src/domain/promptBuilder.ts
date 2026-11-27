@@ -1,6 +1,7 @@
 /** Generates the copy-ready prompt for the user's ChatGPT English project. */
 import { TOPIC_MODES } from './topics';
 import type { CefrLevel } from './types';
+import { gradeInfo, type GradeInfo, type KidGrade } from './grades';
 
 export type ContentKind = 'vocabulary' | 'phrases' | 'sentences' | 'grammar' | 'mistakes' | 'technical' | 'booklist';
 
@@ -26,8 +27,10 @@ export interface PromptOptions {
   level: CefrLevel | 'auto';
   kinds: ContentKind[];
   extraNote?: string;
-  /** 'kid' = pupil in years 5–6 (kids profile). */
+  /** 'kid' = pupil (kids profile). */
   audience?: 'adult' | 'kid';
+  /** School grade band for the kids profile. */
+  grade?: KidGrade;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -59,17 +62,24 @@ const KIND_TEXT: Record<ContentKind, string> = {
     'ALL entries of the vocabulary list, photo or file that I attach to this message or uploaded to this project (e.g. a page of my English book) – convert exactly those entries, do not add others',
 };
 
-const KID_KIND_TEXT: Record<ContentKind, string> = {
-  vocabulary: 'single words from typical German school English books for years 5–6 (type "word")',
-  phrases: 'short useful phrases (type "phrase")',
-  sentences: 'short, simple example sentences a pupil can say out loud (type "sentence")',
-  grammar: 'easy grammar patterns from years 5–6 (e.g. simple present, have got, can, plural) with a very short explanation in German (type "grammar")',
-  mistakes:
-    'corrections of mistakes made in our previous conversations or exercises in this project (type "correction", wrong version in "common_mistake", explanation in simple German)',
-  technical: '',
-  booklist:
-    'ALL entries of the vocabulary list, photo or file attached to this message or uploaded to this project (e.g. the word list of the current unit in the English book) – convert exactly those entries, do not add others',
-};
+function kidKindText(k: ContentKind, g: GradeInfo): string {
+  switch (k) {
+    case 'vocabulary':
+      return `single words from typical German school English books for years ${g.years} (type "word")`;
+    case 'phrases':
+      return 'useful phrases (type "phrase")';
+    case 'sentences':
+      return 'example sentences a pupil can say out loud (type "sentence")';
+    case 'grammar':
+      return `grammar patterns from years ${g.years} (e.g. ${g.grammar}) with a short explanation in German (type "grammar")`;
+    case 'mistakes':
+      return 'corrections of mistakes made in our previous conversations or exercises in this project (type "correction", wrong version in "common_mistake", explanation in simple German)';
+    case 'booklist':
+      return 'ALL entries of the vocabulary list, photo or file attached to this message or uploaded to this project (e.g. the word list of the current unit in the English book) – convert exactly those entries, do not add others';
+    default:
+      return '';
+  }
+}
 
 const METHOD_TEXT: Record<PromptOptions['focusMethod'], string> = {
   mixed: 'a mix of flashcards, writing and speaking practice',
@@ -133,20 +143,21 @@ Rules:
 const KID_TOPICS = TOPIC_MODES.filter((t) => t.audience === 'kid');
 
 function buildKidPrompt(o: PromptOptions): string {
+  const g = gradeInfo(o.grade);
   const topic = KID_TOPICS.find((t) => t.id === o.topic);
   const topicLine = topic
     ? `Topic: ${topic.name} – ${topic.description}. Use "${topic.name}" as category.`
     : `Topic: mixed – choose from ${KID_TOPICS.map((t) => `"${t.name}"`).join(', ')}. Use exactly these names as category values.`;
   const kinds = (o.kinds.length ? o.kinds : DEFAULT_KID_PROMPT_OPTIONS.kinds)
     .filter((k) => k !== 'technical')
-    .map((k) => `- ${KID_KIND_TEXT[k]}`)
+    .map((k) => `- ${kidKindText(k, g)}`)
     .join('\n');
-  const level = o.level === 'auto' ? 'school years 5–6 in Germany (about CEFR A1–A2)' : `CEFR level ${o.level} (school years 5–6 in Germany)`;
+  const level = o.level === 'auto' ? `school years ${g.years} in Germany (about CEFR ${g.cefr})` : `CEFR level ${o.level} (school years ${g.years} in Germany)`;
   const count = Math.max(1, Math.min(200, Math.round(o.count)));
 
-  return `Please create English learning content for a pupil (school years 5–6 in Germany) for the Personal English Trainer app.
+  return `Please create English learning content for a pupil (school years ${g.years} in Germany) for the Personal English Trainer app.
 
-Use ONLY information you can actually access in this project (our previous conversations, exercises, corrections, word lists and files in this project). Do not invent personal facts. If there is not enough context, choose typical vocabulary from German school English books for years 5–6 and mark it with "source": "general".
+Use ONLY information you can actually access in this project (our previous conversations, exercises, corrections, word lists and files in this project). Do not invent personal facts. If there is not enough context, choose typical vocabulary from German school English books for years ${g.years} and mark it with "source": "general".
 
 What I need:
 - ${count} entries
@@ -157,16 +168,16 @@ What I need:
 ${kinds}
 - Prefer words and sentences that were difficult or wrong in our previous exercises.
 - Child-friendly content only. No names of real people, no addresses, no school names.
-- Explanations ("explanation") in short, simple German that an 11-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
+- Explanations ("explanation") in short, simple German that a ${g.age}-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
 
 Output format – IMPORTANT:
 Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so it can be copied with the code block's copy button. Each entry:
 {
-  "english": "English word, phrase or short sentence",
+  "english": "English word, phrase or sentence",
   "german": "German translation",
   "type": "word | phrase | sentence | grammar | correction",
   "category": "${KID_TOPICS.map((t) => t.name).join(' | ')}",
-  "level": "A1 | A2 | B1",
+  "level": "${g.levels.join(' | ')}",
   "example_en": "Short, simple English example sentence",
   "example_de": "German translation of the example",
   "alternatives_en": ["other correct English answers in THIS context only"],

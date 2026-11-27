@@ -103,6 +103,7 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 - Darstellung: `data-profile="kid"` am `<html>` schaltet Farben, Schrift (ui-rounded) und Radien um. `KidHome` ersetzt das Dashboard; der Tab „Statistik“ heißt „Erfolge“.
 - Gamification (`src/domain/gamification.ts`) wird vollständig **aus vorhandenen Daten abgeleitet** (reviewLogs, sessions, progress): XP, Level (`50·n·(n−1)`), Robo-Stufe, Sterne, Abzeichen, Tagesmissionen. Kein zusätzlicher Speicher, immer konsistent, automatisch im Backup.
 - Maskottchen `src/ui/Robot.tsx`: reines SVG, Stimmungen und 5 Stufen, Animationen nur ohne „Bewegung reduzieren“.
+- Klassenstufen (`src/domain/grades.ts`): 5–6, 7–8, 9–10 mit Niveau, Grammatikthemen und eigenem Vokabelpaket (`source` = `starter-kids`, `starter-kids-7-8`, `starter-kids-9-10`). Mitgelieferte Pakete erkennt man an `origin = starter` + `source`; nur diese entfernt `removeStarterPack`.
 - Test-/Entwickler-Schalter (nur `localStorage`, nicht in der UI): `pet.profile` = `adult`|`kid` beantwortet die Startfrage, `pet.skipStarter` = `1` lädt keine Standardvokabeln.
 
 ## Vorbereitet, nicht aktiv

@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { chooseProfile, saveSettings } from '../../db/repo';
 import { navigate } from '../../state';
 import { Robot } from '../../ui/Robot';
+import { KID_GRADES, type KidGrade } from '../../domain/grades';
 
 /** First start of an empty app: who is learning? (adult vs. kid profile) */
 export function Welcome({ onDone }: { onDone: () => void }) {
   const [busy, setBusy] = useState(false);
-  const choose = async (p: 'adult' | 'kid') => {
+  const choose = async (p: 'adult' | 'kid', grade: KidGrade = '5-6') => {
     setBusy(true);
-    await chooseProfile(p);
+    await chooseProfile(p, grade);
     onDone();
   };
   return (
@@ -21,13 +22,22 @@ export function Welcome({ onDone }: { onDone: () => void }) {
         <p className="subtitle">Wer lernt mit dieser App?</p>
       </div>
       <div className="stack">
-        <button className="welcome-choice kid-card purple" disabled={busy} onClick={() => choose('kid')}>
-          <span style={{ fontSize: 40 }} aria-hidden="true">🎒</span>
-          <span className="grow">
-            <strong style={{ display: 'block', fontSize: 19 }}>Für Kinder (Klasse 5–6)</strong>
-            <span className="small muted">Bunt, mit Roboter Robo, Sternen, Levels und Abzeichen. Wörter aus Schule, Familie, Tieren und Alltag.</span>
-          </span>
-        </button>
+        <div className="welcome-choice kid-card purple" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+          <div className="row">
+            <span style={{ fontSize: 40 }} aria-hidden="true">🎒</span>
+            <span className="grow">
+              <strong style={{ display: 'block', fontSize: 19 }}>Für Schüler</strong>
+              <span className="small muted">Bunt, mit Roboter Robo, Sternen, Levels und Abzeichen. Wörter aus Schule, Familie, Tieren und Alltag.</span>
+            </span>
+          </div>
+          <div className="grid-3" role="group" aria-label="Klassenstufe">
+            {KID_GRADES.map((g) => (
+              <button key={g.id} className="btn" disabled={busy} onClick={() => choose('kid', g.id)} aria-label={`Für Schüler, ${g.de}`}>
+                {g.de}
+              </button>
+            ))}
+          </div>
+        </div>
         <button className="welcome-choice card" disabled={busy} onClick={() => choose('adult')}>
           <span style={{ fontSize: 40 }} aria-hidden="true">💼</span>
           <span className="grow">

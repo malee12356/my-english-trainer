@@ -183,6 +183,8 @@ export interface Settings {
   profile?: 'adult' | 'kid';
   /** The profile was chosen (first-start question answered or set automatically). */
   profileChosen?: boolean;
+  /** School grade band of the kids profile (default 5–6). */
+  kidGrade?: '5-6' | '7-8' | '9-10';
   onboarded: boolean;
 }
 

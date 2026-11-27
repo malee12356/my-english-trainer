@@ -6,6 +6,7 @@ import { applyReview, newProgress, progressId } from '../domain/scheduler';
 import { cleanText, itemKey } from '../domain/text';
 import { builtinCategories, resolveCategoryId } from '../domain/topics';
 import { dayKey } from '../domain/stats';
+import { KID_STARTER_SOURCES, type KidGrade } from '../domain/grades';
 import {
   DEFAULT_SETTINGS,
   type Category,
@@ -305,8 +306,8 @@ function readLocal(key: string): string | null {
 export const KID_DEFAULTS = { dailyGoalMin: 10, defaultDurationMin: 10, newPerDay: 8 } as const;
 
 /** Save the learner profile and load the matching default vocabulary into an empty app. */
-export async function chooseProfile(profile: Profile): Promise<void> {
-  await saveSettings({ profile, profileChosen: true, ...(profile === 'kid' ? KID_DEFAULTS : {}) });
+export async function chooseProfile(profile: Profile, grade: KidGrade = '5-6'): Promise<void> {
+  await saveSettings({ profile, profileChosen: true, ...(profile === 'kid' ? { ...KID_DEFAULTS, kidGrade: grade } : {}) });
   await autoLoadStarterOnFirstStart(profile);
 }
 
@@ -333,12 +334,50 @@ export async function resolveProfileOnStart(): Promise<'ready' | 'needs-choice'>
   return 'needs-choice';
 }
 
-export async function loadStarterContent(profile?: Profile): Promise<ImportResult> {
-  const p = profile ?? (await getSettings()).profile ?? 'adult';
-  const { STARTER_CONTENT } = p === 'kid' ? { STARTER_CONTENT: (await import('../data/starterKids')).STARTER_KIDS } : await import('../data/starter');
+async function starterRows(profile: Profile, grade: KidGrade): Promise<Record<string, unknown>[]> {
+  if (profile === 'adult') return (await import('../data/starter')).STARTER_CONTENT;
+  if (grade === '7-8') return (await import('../data/starterKidsUpper')).STARTER_KIDS_7_8;
+  if (grade === '9-10') return (await import('../data/starterKidsUpper')).STARTER_KIDS_9_10;
+  return (await import('../data/starterKids')).STARTER_KIDS;
+}
+
+export async function loadStarterContent(profile?: Profile, grade?: KidGrade): Promise<ImportResult> {
+  const s = await getSettings();
+  const p = profile ?? s.profile ?? 'adult';
+  const STARTER_CONTENT = await starterRows(p, grade ?? s.kidGrade ?? '5-6');
   const snap = await loadSnapshot();
   const plan = planImport(parseImport(JSON.stringify(STARTER_CONTENT)), snap.items, snap.categories.map((c) => c.id));
   // never overwrite the user's own content with starter content
   for (const r of plan.rows) if (r.action === 'update') r.action = 'skip';
   return applyImport(plan, 'starter', 'starter');
+}
+
+/* ------------------------------------------------- remove default packs */
+
+export type StarterPack = 'kids' | 'adult';
+
+function inPack(it: Item, pack: StarterPack): boolean {
+  if (it.origin !== 'starter') return false;
+  const src = it.source ?? '';
+  return pack === 'kids' ? KID_STARTER_SOURCES.includes(src) : !KID_STARTER_SOURCES.includes(src);
+}
+
+/** Number of default-pack items and how many of them were already practised. */
+export async function starterPackInfo(pack: StarterPack): Promise<{ count: number; practised: number }> {
+  const d = db();
+  const items = (await d.items.toArray()).filter((i) => inPack(i, pack));
+  const ids = new Set(items.map((i) => i.id));
+  const practised = new Set((await d.progress.toArray()).filter((p) => ids.has(p.itemId) && p.reps > 0).map((p) => p.itemId));
+  return { count: items.length, practised: practised.size };
+}
+
+/**
+ * Remove a default vocabulary pack (only items the app added as starter
+ * content – own imports and manual items are never touched). Their learning
+ * progress is removed too; review history stays for statistics.
+ */
+export async function removeStarterPack(pack: StarterPack): Promise<number> {
+  const ids = (await db().items.toArray()).filter((i) => inPack(i, pack)).map((i) => i.id);
+  await deleteItems(ids);
+  return ids.length;
 }
