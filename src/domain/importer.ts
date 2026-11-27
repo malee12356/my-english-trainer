@@ -5,6 +5,7 @@
  * limited, and nothing is ever rendered as HTML.
  */
 import { parseCsvObjects } from './csv';
+import { parseLooseJson } from './looseJson';
 import { cleanText, itemKey, normalize } from './text';
 import { resolveCategoryId } from './topics';
 import { CEFR_LEVELS, ITEM_TYPES, type CefrLevel, type ExamplePair, type Item, type ItemType } from './types';
@@ -118,15 +119,19 @@ export function parseJsonLenient(text: string): { data?: unknown; repairs: strin
       text: () => extractJson(unescapeMarkdown(text)).replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"').replace(/,\s*([\]}])/g, '$1'),
     },
   ];
-  let firstError = '';
   for (const a of attempts) {
     try {
       return { data: JSON.parse(a.text()), repairs: a.repairs };
-    } catch (e) {
-      firstError ||= (e as Error).message;
+    } catch {
+      /* try the next repair step */
     }
   }
-  return { repairs: [], error: firstError };
+  // Last resort: tolerant reader (typographic quotes, lost list brackets, …)
+  try {
+    return { data: parseLooseJson(extractJson(unescapeMarkdown(text))), repairs: ['markdown', 'quotes', 'structure'] };
+  } catch (e) {
+    return { repairs: [], error: (e as Error).message };
+  }
 }
 
 export function parseImport(text: string, format: 'json' | 'csv' | 'auto' = 'auto'): { format: 'json' | 'csv'; rows: ParsedRow[]; fatal?: string; repairs?: string[] } {

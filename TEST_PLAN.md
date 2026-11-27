@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.6.0):** Typecheck ✅ · 118/118 Unit-/Integrationstests ✅ · 43/43 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.6.1):** Typecheck ✅ · 124/124 Unit-/Integrationstests ✅ · 44/44 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 

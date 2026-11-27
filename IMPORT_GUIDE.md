@@ -13,7 +13,7 @@ Vor dem Import zeigt die App eine **Vorschau**: neue Einträge, Aktualisierungen
 
 ## Kopieren aus der ChatGPT-App (wichtig)
 
-ChatGPT gibt das JSON in einem **Codeblock** (dunkler Kasten) aus. Bitte den **Kopier-Knopf des Codeblocks** verwenden. Wird stattdessen die ganze Nachricht kopiert, fügt die ChatGPT-App Markdown-Zeichen ein (z. B. `\[` statt `[` oder `example\_en`). Die App repariert das beim Import automatisch und zeigt dann den Hinweis „automatisch repariert“. Ebenso entfernt sie umgebenden Text, wandelt typografische Anführungszeichen um und streicht abschließende Kommas.
+ChatGPT gibt das JSON in einem **Codeblock** (dunkler Kasten) aus. Bitte den **Kopier-Knopf des Codeblocks** verwenden. Wird stattdessen die ganze Nachricht kopiert, fügt die ChatGPT-App Markdown-Zeichen ein (z. B. `\[` statt `[` oder `example\_en`). Die App repariert das beim Import automatisch und zeigt dann den Hinweis „automatisch repariert“. Ebenso entfernt sie umgebenden Text, liest typografische Anführungszeichen (“ ”), ergänzt verloren gegangene Listenklammern (`"tags": "a", "b"`) und ignoriert überzählige Kommas.
 
 ## Vokabelliste aus dem Schulbuch
 
