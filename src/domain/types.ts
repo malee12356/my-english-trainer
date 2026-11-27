@@ -46,6 +46,10 @@ export interface Item {
   common_mistake?: string;
   explanation?: string;
   source?: string;
+  /** School book structure (optional): unit heading, page number and book title. */
+  unit?: string;
+  page?: number;
+  book?: string;
   favorite: boolean;
   archived: boolean;
   collections: string[];

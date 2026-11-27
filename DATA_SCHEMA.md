@@ -31,6 +31,9 @@ Ein JSON-Array von Einträgen. Alternativ ein Objekt `{ "schema": "personal-engl
 | `common_mistake` | string | Typischer/eigener Fehler (bei `correction`) |
 | `explanation` | string | Erklärung (max. 4000) |
 | `source` | string | Herkunft, z. B. `chatgpt-project` |
+| `unit` | string | Unit/Lektion im Schulbuch, z. B. `"Unit 3"` (`"3"` → `"Unit 3"`); fehlt sie bei einer Seite, wird sie von der vorherigen Seite derselben Datei übernommen |
+| `page` | number \| string | Buchseite, z. B. `196` oder `"S. 196"` |
+| `book` | string | Buchtitel (optional; Unit-Übernahme nur innerhalb desselben Buchs) |
 | `examples` | `{en, de?}[]` \| string[] | Weitere Beispiele (max. 10) |
 | `id` | string | Externe stabile ID → Abgleich bei Re-Import (auch wenn sich `english` ändert) |
 | `created_at`, `updated_at` | ISO-8601 | Optional; `updated_at` wird beim Import neu gesetzt |
@@ -95,7 +98,7 @@ Validierung vor Restore: Format-ID, Version ≤ unterstützt, alle Arrays vorhan
 
 ## 4. CSV-Export
 
-Spalten: `id, english, german, type, level, categories, tags, alternatives_en, alternatives_de, example_en, example_de, ipa, notes, common_mistake, explanation, source` (Listen mit `|`). Re-importierbar.
+Spalten: `id, english, german, type, level, categories, tags, alternatives_en, alternatives_de, example_en, example_de, ipa, notes, common_mistake, explanation, source, unit, page, book` (Listen mit `|`). Re-importierbar.
 
 ## 5. Einrichtungscode (Eltern → Schüler-App)
 

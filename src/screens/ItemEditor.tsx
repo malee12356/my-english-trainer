@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { addItem, deleteItems, updateItem } from '../db/repo';
 import { retrievability, STATE } from '../domain/scheduler';
 import { itemKey } from '../domain/text';
+import { normalizeUnit, parsePage } from '../domain/importer';
 import { CEFR_LEVELS, ITEM_TYPES, SKILLS, type CefrLevel, type Item, type ItemType, type Skill } from '../domain/types';
 import { navigate, useApp, useSnapshot } from '../state';
 import { NavBar, SpeakButton, Toggle, useConfirm } from '../ui/components';
@@ -23,11 +24,15 @@ interface Form {
   explanation: string;
   favorite: boolean;
   archived: boolean;
+  unit: string;
+  page: string;
+  book: string;
 }
 
 const empty: Form = {
   english: '', german: '', type: 'phrase', level: '', categories: [], tags: '', alternatives_en: '', alternatives_de: '',
   example_en: '', example_de: '', ipa: '', notes: '', common_mistake: '', explanation: '', favorite: false, archived: false,
+  unit: '', page: '', book: '',
 };
 
 const toForm = (i: Item): Form => ({
@@ -35,6 +40,7 @@ const toForm = (i: Item): Form => ({
   alternatives_en: i.alternatives_en.join('\n'), alternatives_de: i.alternatives_de.join('\n'), example_en: i.example_en ?? '',
   example_de: i.example_de ?? '', ipa: i.ipa ?? '', notes: i.notes ?? '', common_mistake: i.common_mistake ?? '',
   explanation: i.explanation ?? '', favorite: i.favorite, archived: i.archived,
+  unit: i.unit ?? '', page: i.page !== undefined ? String(i.page) : '', book: i.book ?? '',
 });
 
 const lines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
@@ -91,6 +97,7 @@ export function ItemEditor({ id }: { id: string }) {
       alternatives_de: lines(form.alternatives_de), example_en: opt(form.example_en), example_de: opt(form.example_de),
       ipa: opt(form.ipa), notes: opt(form.notes), common_mistake: opt(form.common_mistake), explanation: opt(form.explanation),
       favorite: form.favorite, archived: form.archived,
+      unit: normalizeUnit(opt(form.unit)), page: parsePage(form.page), book: opt(form.book),
     };
     if (isNew) await addItem(data);
     else await updateItem(id, data);
@@ -161,6 +168,11 @@ export function ItemEditor({ id }: { id: string }) {
         {text('example_de', L('Beispielsatz (DE)', 'Example (DE)'), { lang: 'de' })}
         {text('alternatives_en', L('Alternative englische Antworten (eine pro Zeile)', 'Alternative English answers (one per line)'), { area: true, lang: 'en' })}
         {text('alternatives_de', L('Alternative deutsche Antworten (eine pro Zeile)', 'Alternative German answers (one per line)'), { area: true, lang: 'de' })}
+        <div className="grid-3">
+          {text('unit', 'Unit', { placeholder: 'Unit 3' })}
+          {text('page', L('Seite', 'Page'), { placeholder: '196' })}
+          {text('book', L('Buch', 'Book'))}
+        </div>
         {text('ipa', 'IPA', { placeholder: '/ˈɪɡ.zæm.pəl/' })}
         {text('tags', L('Tags (kommagetrennt)', 'Tags (comma separated)'))}
         {text('common_mistake', L('Typischer Fehler', 'Common mistake'))}

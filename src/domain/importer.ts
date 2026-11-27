@@ -39,6 +39,9 @@ export interface ItemDraft {
   common_mistake?: string;
   explanation?: string;
   source?: string;
+  unit?: string;
+  page?: number;
+  book?: string;
   created_at?: string;
 }
 
@@ -153,7 +156,7 @@ export function parseImport(text: string, format: 'json' | 'csv' | 'auto' = 'aut
     raw = parseCsvObjects(body);
   }
   if (raw.length > MAX_IMPORT_ROWS) return { format: fmt, rows: [], fatal: `too-many:${raw.length}` };
-  return { format: fmt, rows: raw.map((r, i) => validateRow(r, i + 1)), repairs };
+  return { format: fmt, rows: inheritUnits(raw.map((r, i) => validateRow(r, i + 1))), repairs };
 }
 
 const STR_MAX = 1000;
@@ -279,6 +282,9 @@ export function validateRow(input: unknown, index: number): ParsedRow {
     common_mistake: str(pick(o, 'common_mistake', 'mistake'), STR_MAX, warnings, 'common_mistake'),
     explanation: str(pick(o, 'explanation'), LONG_MAX, warnings, 'explanation'),
     source: str(pick(o, 'source'), 200, warnings, 'source'),
+    unit: normalizeUnit(str(pick(o, 'unit', 'lesson', 'lektion', 'kapitel', 'chapter'), 60)),
+    page: parsePage(pick(o, 'page', 'seite', 'p')),
+    book: str(pick(o, 'book', 'buch', 'schoolbook'), 80),
     created_at: validDate(pick(o, 'created_at')),
   };
   // alternatives identical to the main answer are pointless
@@ -287,9 +293,47 @@ export function validateRow(input: unknown, index: number): ParsedRow {
   return { index, draft, errors, warnings };
 }
 
+/* ------------------------------------------------------------ units & pages */
+
+/** "3" → "Unit 3", "unit 3" → "Unit 3"; other names (e.g. "Welcome", "Lektion 2") stay. */
+export function normalizeUnit(u: string | undefined): string | undefined {
+  if (!u) return undefined;
+  const t = u.trim().replace(/\s+/g, ' ');
+  if (/^\d{1,3}[a-z]?$/i.test(t)) return `Unit ${t}`;
+  const m = t.match(/^unit\s*(\S+)$/i);
+  return m ? `Unit ${m[1]}` : t;
+}
+
+/** 196, "196", "S. 196", "p. 196", "page 196f." → 196 */
+export function parsePage(v: unknown): number | undefined {
+  if (typeof v === 'number' && Number.isInteger(v) && v > 0 && v < 10000) return v;
+  if (typeof v !== 'string') return undefined;
+  const m = v.match(/\d{1,4}/);
+  return m ? Number(m[0]) : undefined;
+}
+
+/**
+ * Pages without a unit heading belong to the last unit before them: rows with a
+ * page but no unit get the unit of the closest lower page (same book) in this file.
+ */
+export function inheritUnits(rows: ParsedRow[]): ParsedRow[] {
+  const known = rows
+    .map((r) => r.draft)
+    .filter((d): d is ItemDraft => !!d && !!d.unit && d.page !== undefined)
+    .sort((a, b) => a.page! - b.page!);
+  if (!known.length) return rows;
+  return rows.map((r) => {
+    const d = r.draft;
+    if (!d || d.unit || d.page === undefined) return r;
+    const prev = known.filter((k) => k.page! <= d.page! && (k.book ?? '') === (d.book ?? '')).pop();
+    if (!prev) return r;
+    return { ...r, draft: { ...d, unit: prev.unit }, warnings: [...r.warnings, `unit: ${prev.unit} (von Seite ${prev.page} übernommen)`] };
+  });
+}
+
 /* ----------------------------------------------------------------- planning */
 
-const SCALAR_FIELDS = ['german', 'example_en', 'example_de', 'ipa', 'level', 'notes', 'common_mistake', 'explanation', 'source'] as const;
+const SCALAR_FIELDS = ['german', 'example_en', 'example_de', 'ipa', 'level', 'notes', 'common_mistake', 'explanation', 'source', 'unit', 'page', 'book'] as const;
 
 /** Which fields of `existing` would change if `draft` were merged in. */
 export function diffDraft(existing: Item, draft: ItemDraft): string[] {
@@ -364,6 +408,9 @@ export function draftToItem(d: ItemDraft, id: string, now: string, origin: Item[
     common_mistake: d.common_mistake,
     explanation: d.explanation,
     source: d.source,
+    unit: d.unit,
+    page: d.page,
+    book: d.book,
     favorite: false,
     archived: false,
     collections: [],

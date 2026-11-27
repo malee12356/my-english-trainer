@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.7.1):** Typecheck ✅ · 132/132 Unit-/Integrationstests ✅ · 47/47 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.8.0):** Typecheck ✅ · 141/141 Unit-/Integrationstests ✅ · 49/49 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -107,6 +107,12 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] M4 Falsche PIN → Meldung; richtige PIN entsperrt; „Jetzt sperren“
 - [ ] M5 Neue Regeln (z. B. 2 Min/Wort) mit derselben PIN schicken → werden ohne PIN übernommen
 - [ ] M6 Schülerprofil + PIN direkt in den Einstellungen eingerichtet → „Diese Einrichtung per WhatsApp senden“ ist sichtbar
+
+### N. Units & Seiten (v0.8.0)
+- [ ] N1 Prompt mit „Vokabelliste (Foto/Datei)“ + 3–4 Fotos (Seite mit und ohne Unit-Überschrift) an ChatGPT → JSON enthält `unit` und `page`
+- [ ] N2 Import → Vokabelliste zeigt Unit und Seite; Seiten ohne Überschrift haben die richtige Unit
+- [ ] N3 „Hausaufgabe üben“ → Unit wählen → Anzahl stimmt → „Alle Wörter schreiben“
+- [ ] N4 Seiten von–bis (z. B. 196–198) → Anzahl stimmt → als Spielzeit-Challenge
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

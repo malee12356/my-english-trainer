@@ -141,7 +141,7 @@ export async function restoreBackup(b: BackupFile): Promise<void> {
 
 export const CSV_COLUMNS = [
   'id', 'english', 'german', 'type', 'level', 'categories', 'tags', 'alternatives_en', 'alternatives_de',
-  'example_en', 'example_de', 'ipa', 'notes', 'common_mistake', 'explanation', 'source',
+  'example_en', 'example_de', 'ipa', 'notes', 'common_mistake', 'explanation', 'source', 'unit', 'page', 'book',
 ] as const;
 
 export function itemsToCsv(items: Item[], categories: Category[]): string {
@@ -150,6 +150,7 @@ export function itemsToCsv(items: Item[], categories: Category[]): string {
     it.externalId ?? it.id, it.english, it.german, it.type, it.level ?? '', it.categories.map(catName).join('|'),
     it.tags.join('|'), it.alternatives_en.join('|'), it.alternatives_de.join('|'), it.example_en ?? '', it.example_de ?? '',
     it.ipa ?? '', it.notes ?? '', it.common_mistake ?? '', it.explanation ?? '', it.source ?? '',
+    it.unit ?? '', it.page !== undefined ? String(it.page) : '', it.book ?? '',
   ]);
   return toCsv([...CSV_COLUMNS], rows);
 }
@@ -176,6 +177,9 @@ export function itemsToImportJson(items: Item[], categories: Category[]): string
       common_mistake: it.common_mistake,
       explanation: it.explanation,
       source: it.source,
+      unit: it.unit,
+      page: it.page,
+      book: it.book,
       created_at: it.created_at,
       updated_at: it.updated_at,
     };
