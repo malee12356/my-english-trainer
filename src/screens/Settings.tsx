@@ -71,6 +71,17 @@ export function SettingsScreen() {
           options={[{ value: 'adult', label: L('Erwachsene', 'Adults') }, { value: 'kid', label: L('Schüler 🤖', 'Pupils 🤖') }]}
         />
         {settings.profile === 'kid' && (
+          <div className="row wrap small" style={{ gap: 8 }}>
+            <span className="grow">🎮 {L('Spielzeit-Challenge', 'Screen-time challenge')}</span>
+            <select className="select" style={{ width: 'auto', minHeight: 36, padding: '4px 30px 4px 8px', fontSize: 15, backgroundPosition: 'calc(100% - 16px) 15px, calc(100% - 10px) 15px' }} value={settings.challengeWords ?? 20} onChange={(e) => updateSettings({ challengeWords: Number(e.target.value) })} aria-label={L('Wörter pro Challenge', 'Words per challenge')}>
+              {[10, 15, 20, 25, 30].map((n) => <option key={n} value={n}>{n} {L('Wörter', 'words')}</option>)}
+            </select>
+            <select className="select" style={{ width: 'auto', minHeight: 36, padding: '4px 30px 4px 8px', fontSize: 15, backgroundPosition: 'calc(100% - 16px) 15px, calc(100% - 10px) 15px' }} value={settings.minutesPerWord ?? 1} onChange={(e) => updateSettings({ minutesPerWord: Number(e.target.value) })} aria-label={L('Minuten pro richtigem Wort', 'Minutes per correct word')}>
+              {[0.5, 1, 2].map((n) => <option key={n} value={n}>{String(n).replace('.', ',')} {L('Min/Wort', 'min/word')}</option>)}
+            </select>
+          </div>
+        )}
+        {settings.profile === 'kid' && (
           <Segmented
             label={L('Klassenstufe', 'School year')}
             value={grade.id}

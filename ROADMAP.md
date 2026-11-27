@@ -38,6 +38,7 @@ Legende: ✅ umgesetzt · 🟡 teilweise/vorbereitet · ⬜ offen · 🔒 nur na
 - ✅ Maskottchen Robo, XP, Level, Sterne, Abzeichen, Tagesmissionen, buntes Design
 - ✅ Kinder-Themen und ~120 Standardvokabeln (Klasse 5–6)
 - ✅ Schüler-Prompt, Vokabelliste per Foto
+- ✅ Spielzeit-Challenge mit Teilen per WhatsApp (v0.6.0)
 - ⬜ Rückmeldung des Sohnes einarbeiten (Lieblingsspiele, Schwierigkeit, weitere Themen wie Sport/Hobbys)
 - ⬜ Optional: Eltern-Bereich (PIN) für Einstellungen/Backup
 

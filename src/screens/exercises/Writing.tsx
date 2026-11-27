@@ -42,7 +42,7 @@ function AnswerInput({ value, onChange, onSubmit, disabled, label, placeholder }
 }
 
 /** Writing Mode: German prompt → type the English answer. */
-export function Writing({ item, settings, onDone }: ExerciseProps) {
+export function Writing({ item, settings, onDone, strict }: ExerciseProps) {
   const { L, bump, toast } = useApp();
   const [value, setValue] = useState('');
   const [result, setResult] = useState<CheckResult | null>(null);
@@ -65,7 +65,7 @@ export function Writing({ item, settings, onDone }: ExerciseProps) {
       <div className="card center" style={{ padding: '24px 16px' }}>
         <span className="badge">Deutsch → English · {L('schreiben', 'write')}</span>
         <div className={`term ${item.german.length > 40 ? 'long' : ''}`} style={{ marginTop: 10 }} lang="de">{item.german}</div>
-        {item.example_de && !hint && !result && (
+        {item.example_de && !hint && !result && !strict && (
           <button className="btn ghost small" onClick={() => setHint(true)}>{L('Hinweis zeigen', 'Show hint')}</button>
         )}
         {hint && !result && (
@@ -85,8 +85,8 @@ export function Writing({ item, settings, onDone }: ExerciseProps) {
           expected={item.english}
           given={value}
           onNext={() => onDone(result.grade, value)}
-          onOverride={() => onDone(3, value)}
-          onAddAlternative={value.trim() ? addAlternative : undefined}
+          onOverride={strict ? undefined : () => onDone(3, value)}
+          onAddAlternative={!strict && value.trim() ? addAlternative : undefined}
         />
       )}
     </div>
