@@ -4,7 +4,7 @@ Offline-first Progressive Web App zum Englischlernen (Deutsch → Englisch, Ziel
 
 Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen individuelle Lerninhalte, die per JSON/CSV importiert und hier mit Spaced Repetition (FSRS) gelernt werden.
 
-> Status: **v0.6.0 – Phase 1 abgeschlossen, Phase 2 in Arbeit (Speaking Mode fertig), Schülermodus Klasse 5–10 mit Spielzeit-Challenge** (siehe [ROADMAP.md](ROADMAP.md)).
+> Status: **v0.7.0 – Phase 1 abgeschlossen, Phase 2 in Arbeit (Speaking Mode fertig), Schülermodus Klasse 5–10 mit Spielzeit-Challenge** (siehe [ROADMAP.md](ROADMAP.md)).
 >
 > App-URL (nach Merge auf `main` und einmaliger Pages-Aktivierung): **https://malee12356.github.io/my-english-trainer/**
 
@@ -18,6 +18,7 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 | Lernmethoden | Karteikarten (EN→DE, DE→EN, zufällig; 4 Bewertungsstufen), Writing Mode (Tippfehler, Alternativen, Satzzeichen, Diff-Darstellung), Lückentext (3 Stufen), Satzbau, Listening (Auswahl & Diktat, Tempo), Speaking (Spracherkennung mit Einwilligung, 3 Versuche, Schreib-Fallback). Aussprache/Free Speaking: als geplant markiert |
 | Wiederholung | FSRS (ts-fsrs), getrennt je Fähigkeit (Verstehen, Abrufen, Schreiben, Hören), Sitzungsschutz gegen Intervall-Aufblähung, Tagesplanung nach Zeitbudget |
 | Schülermodus | Profil „Schüler“ mit Klassenstufe 5–6 / 7–8 / 9–10: Roboter-Maskottchen Robo, XP, Level, Sterne, Abzeichen, Tagesmissionen, buntes Design, Themen Schule / Familie & Tiere / Alltag mit ~120 Standardvokabeln, Schüler-Prompt für ChatGPT |
+| Eltern-PIN & Einrichtung | Eltern richten die Schüler-App per Einrichtungscode (WhatsApp) ein; Profil, Klasse und Spielzeit-Regeln sind mit Eltern-PIN gesperrt |
 | Spielzeit-Challenge | Schüler schreiben (oder sprechen) 20 unsichere Wörter; 1 Minute Spielzeit pro richtigem Wort; Ergebnis per WhatsApp/Teilen an die Eltern |
 | Standardvokabeln | 163 allgemeine Einträge für alle Themenmodi, beim ersten Start automatisch geladen (einmalig); fehlende jederzeit ergänzbar |
 | Import | JSON & CSV aus Datei (Dateien-App) oder Zwischenablage, Validierung, Vorschau, Duplikate, Aktualisierungen, Kategorien automatisch, Fortschritt bleibt erhalten, Bestätigung nötig |

@@ -2,6 +2,14 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.7.0] – 2026-11-27
+
+### Hinzugefügt – Eltern-PIN und Einrichtung per Nachricht
+- **Eltern-PIN** (4–8 Ziffern, nur als PBKDF2-Hash gespeichert). Sie sperrt Profilwechsel, Klassenstufe, Spielzeit-Regeln, das Entfernen von Paketen und das Wiederherstellen von Backups. Entsperren gilt 5 Minuten, „Jetzt sperren“ sperrt sofort; nach 5 Fehlversuchen gilt 1 Minute Wartezeit.
+- **„Schüler-App für mein Kind einrichten“** (Erwachsenenprofil): Klasse, Wörter pro Challenge, Minuten pro Wort und PIN wählen, dann eine Nachricht mit **Einrichtungscode** teilen (WhatsApp, Teilen, Kopieren). Die PIN steht nicht im Klartext darin.
+- **„Einrichtungscode einfügen“** beim ersten Start und in den Einstellungen. Die ganze Nachricht kann eingefügt werden; Profil, Klasse, Regeln und PIN werden übernommen, eine leere App lädt das Vokabelpaket der Klasse. Neue Regeln mit derselben PIN werden ohne PIN-Abfrage übernommen, eine andere PIN verlangt die bisherige.
+- Links `#/setup?c=…` werden ebenfalls erkannt (in Safari). Hinweis: Auf dem iPhone öffnen Links nie die installierte App, deshalb wird der Code eingefügt.
+
 ## [0.6.1] – 2026-11-27
 
 ### Behoben

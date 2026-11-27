@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { decodeSetup } from '../../domain/parental';
+import { SetupCodeSheet } from '../parent/ParentUI';
 import { chooseProfile, saveSettings } from '../../db/repo';
 import { navigate } from '../../state';
 import { Robot } from '../../ui/Robot';
@@ -7,6 +9,9 @@ import { KID_GRADES, type KidGrade } from '../../domain/grades';
 /** First start of an empty app: who is learning? (adult vs. kid profile) */
 export function Welcome({ onDone }: { onDone: () => void }) {
   const [busy, setBusy] = useState(false);
+  // opened via a setup link (#/setup?c=…) → offer to apply it directly
+  const linkText = typeof location !== 'undefined' && decodeSetup(location.href) ? location.href : '';
+  const [codeOpen, setCodeOpen] = useState(!!linkText);
   const choose = async (p: 'adult' | 'kid', grade: KidGrade = '5-6') => {
     setBusy(true);
     await chooseProfile(p, grade);
@@ -45,6 +50,9 @@ export function Welcome({ onDone }: { onDone: () => void }) {
             <span className="small muted">Alltag, Beruf, Meetings, Technik und Handball-Coaching.</span>
           </span>
         </button>
+        <button className="btn block secondary" disabled={busy} onClick={() => setCodeOpen(true)}>
+          🔑 Einrichtungscode von den Eltern einfügen
+        </button>
         <button
           className="btn block ghost"
           disabled={busy}
@@ -60,6 +68,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
         </button>
         <p className="tiny muted center">Das lässt sich später in den Einstellungen ändern. Alle Daten bleiben auf diesem Gerät.</p>
       </div>
+      <SetupCodeSheet open={codeOpen} onClose={() => setCodeOpen(false)} initialText={linkText} onApplied={() => { navigate('/home', true); onDone(); }} />
     </main>
   );
 }

@@ -5,9 +5,11 @@ import { useApp } from '../state';
 import { NavBar, useConfirm } from '../ui/components';
 import { dateStamp, readFileAsText, saveFile } from '../ui/files';
 import { IconDownload, IconUpload } from '../ui/icons';
+import { PinUnlockSheet } from './parent/ParentUI';
 
 export function BackupScreen() {
-  const { L, settings, bump, toast, updateSettings } = useApp();
+  const { L, settings, bump, toast, updateSettings, parentLocked } = useApp();
+  const [unlock, setUnlock] = useState(false);
   const [check, setCheck] = useState<BackupCheck | null>(null);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -79,6 +81,13 @@ export function BackupScreen() {
       </div>
 
       <h2 className="section-title">{L('Wiederherstellen', 'Restore')}</h2>
+      {parentLocked ? (
+        <div className="card stack">
+          <span className="small muted">🔒 {L('Wiederherstellen ist durch die Eltern-PIN geschützt.', 'Restoring is protected by the parent PIN.')}</span>
+          <button className="btn block secondary" onClick={() => setUnlock(true)}>🔓 {L('Elternbereich entsperren', 'Unlock parent area')}</button>
+          <PinUnlockSheet open={unlock} onClose={() => setUnlock(false)} />
+        </div>
+      ) : (
       <div className="card stack">
         <input ref={fileRef} type="file" accept=".json,application/json" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} aria-label={L('Backup-Datei wählen', 'Choose backup file')} />
         <button className="btn block secondary" onClick={() => fileRef.current?.click()}><IconUpload size={20} /> {L('Backup-Datei wählen', 'Choose backup file')}</button>
@@ -98,6 +107,7 @@ export function BackupScreen() {
           </div>
         )}
       </div>
+      )}
       {dialog}
     </main>
   );

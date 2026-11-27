@@ -381,3 +381,23 @@ export async function removeStarterPack(pack: StarterPack): Promise<number> {
   await deleteItems(ids);
   return ids.length;
 }
+
+/* --------------------------------------------------------- parental setup */
+
+/**
+ * Apply a setup code from a parent's app. In an empty app the default pupil
+ * vocabulary of the grade is loaded as well. Learning data is never touched.
+ */
+export async function applySetup(cfg: import('../domain/parental').SetupConfig): Promise<void> {
+  const empty = (await db().items.count()) === 0;
+  await saveSettings({
+    profile: 'kid',
+    profileChosen: true,
+    kidGrade: cfg.grade,
+    challengeWords: cfg.words,
+    minutesPerWord: cfg.minutesPerWord,
+    parentLock: cfg.lock,
+    ...(empty ? KID_DEFAULTS : {}),
+  });
+  if (empty) await autoLoadStarterOnFirstStart('kid');
+}

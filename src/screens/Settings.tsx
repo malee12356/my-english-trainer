@@ -5,9 +5,11 @@ import { DURATIONS } from '../domain/methods';
 import { useApp } from '../state';
 import { chosenVoice, englishVoices, speak, ttsSupported } from '../speech/tts';
 import { ListLink, Segmented, Sheet, Toggle, useConfirm } from '../ui/components';
+import { PinUnlockSheet, SetPinSheet, SetupCodeSheet, SetupGeneratorSheet } from './parent/ParentUI';
 
 export function SettingsScreen() {
-  const { L, settings, updateSettings, voices, caps, bump, toast } = useApp();
+  const { L, settings, updateSettings, voices, caps, bump, toast, parentLocked, lockParent } = useApp();
+  const [sheet, setSheet] = useState<null | 'unlock' | 'pin' | 'code' | 'generator'>(null);
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
   const [packs, setPacks] = useState<Record<StarterPack, { count: number; practised: number }> | null>(null);
@@ -64,6 +66,21 @@ export function SettingsScreen() {
 
       <h2 className="section-title">{L('Profil – wer lernt?', 'Profile – who is learning?')}</h2>
       <div className="card stack" style={{ gap: 10 }}>
+        {parentLocked ? (
+          <>
+            <div className="row">
+              <span style={{ fontSize: 28 }} aria-hidden="true">🔒</span>
+              <span className="grow small">
+                <strong style={{ display: 'block' }}>{L('Von den Eltern eingestellt', 'Set by parents')}</strong>
+                {settings.profile === 'kid'
+                  ? L(`Schüler · ${grade.de} · ${settings.challengeWords ?? 20} Wörter · ${String(settings.minutesPerWord ?? 1).replace('.', ',')} Min. pro Wort`, `Pupil · ${grade.en} · ${settings.challengeWords ?? 20} words · ${settings.minutesPerWord ?? 1} min per word`)
+                  : L('Erwachsene', 'Adults')}
+              </span>
+            </div>
+            <button className="btn block secondary" onClick={() => setSheet('unlock')}>🔓 {L('Elternbereich entsperren', 'Unlock parent area')}</button>
+          </>
+        ) : (
+          <>
         <Segmented
           label={L('Profil', 'Profile')}
           value={settings.profile ?? 'adult'}
@@ -89,6 +106,15 @@ export function SettingsScreen() {
             options={KID_GRADES.map((g) => ({ value: g.id, label: L(g.de, g.en) }))}
           />
         )}
+            <div className="row wrap" style={{ gap: 8 }}>
+              <button className="btn small secondary" onClick={() => setSheet('pin')}>🔒 {settings.parentLock ? L('PIN ändern', 'Change PIN') : L('Eltern-PIN festlegen', 'Set parent PIN')}</button>
+              {settings.parentLock && <button className="btn small secondary" onClick={lockParent}>{L('Jetzt sperren', 'Lock now')}</button>}
+              {settings.parentLock && <button className="btn small ghost" onClick={async () => { await updateSettings({ parentLock: undefined }); toast(L('Eltern-PIN entfernt', 'Parent PIN removed')); }}>{L('PIN entfernen', 'Remove PIN')}</button>}
+            </div>
+          </>
+        )}
+        <button className="btn small ghost" onClick={() => setSheet('code')}>🔑 {L('Einrichtungscode einfügen', 'Paste setup code')}</button>
+        {settings.profile !== 'kid' && <button className="btn small ghost" onClick={() => setSheet('generator')}>📲 {L('Schüler-App für mein Kind einrichten', "Set up my child's pupil app")}</button>}
         <span className="tiny muted">{L('Schüler: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Die Klassenstufe steuert ChatGPT-Prompt und Niveau. Lernfortschritt bleibt erhalten. Vokabelpakete: unten unter „Daten & Import“.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept. Kids vocabulary: below under “Data & import”.')}</span>
         <span className="tiny muted">Version {__APP_VERSION__}</span>
       </div>
@@ -100,7 +126,7 @@ export function SettingsScreen() {
         <ListLink to="/item/new" icon="✍️" title={L('Manuell hinzufügen', 'Add manually')} />
         <ListLink to="/backup" icon="💾" title={L('Backup & Wiederherstellung', 'Backup & restore')} subtitle={settings.lastBackupAt ? `${L('Letztes Backup', 'Last backup')}: ${new Date(settings.lastBackupAt).toLocaleDateString()}` : L('Noch kein Backup', 'No backup yet')} />
         <ListLink onClick={async () => { const r = await loadStarterContent('kid', grade.id); bump(); toast(L(`${r.added} Schüler-Vokabeln geladen`, `${r.added} pupil items loaded`)); }} icon="🎒" title={L(`Schüler-Vokabeln laden (${grade.de})`, `Load pupil vocabulary (${grade.en})`)} subtitle={L('Schule, Familie & Tiere, Alltag – Stufe wie oben beim Profil gewählt', 'School, family & animals, daily life – grade as chosen above')} />
-        <ListLink onClick={openPacks} icon="🧹" title={L('Standardvokabeln entfernen …', 'Remove default vocabulary …')} subtitle={L('Mitgelieferte Pakete wieder löschen (eigene Importe bleiben)', 'Delete shipped packs again (own imports stay)')} />
+        {!parentLocked && <ListLink onClick={openPacks} icon="🧹" title={L('Standardvokabeln entfernen …', 'Remove default vocabulary …')} subtitle={L('Mitgelieferte Pakete wieder löschen (eigene Importe bleiben)', 'Delete shipped packs again (own imports stay)')} />}
         <ListLink onClick={async () => { const r = await loadStarterContent('adult'); bump(); toast(L(`${r.added} neue Starter-Einträge`, `${r.added} new starter items`)); }} icon="🌱" title={L('Standardvokabeln laden', 'Load default vocabulary')} subtitle={L('≈ 160 allgemeine Einträge für alle Themenmodi – nur fehlende werden ergänzt', '≈ 160 generic items for all topic modes – only missing ones are added')} />
       </div>
 
@@ -193,6 +219,10 @@ export function SettingsScreen() {
           <button className="btn block secondary" onClick={() => setPacks(null)}>{L('Schließen', 'Close')}</button>
         </div>
       </Sheet>
+      <PinUnlockSheet open={sheet === 'unlock'} onClose={() => setSheet(null)} />
+      <SetPinSheet open={sheet === 'pin'} onClose={() => setSheet(null)} />
+      <SetupCodeSheet open={sheet === 'code'} onClose={() => setSheet(null)} />
+      <SetupGeneratorSheet open={sheet === 'generator'} onClose={() => setSheet(null)} />
       {dialog}
     </main>
   );

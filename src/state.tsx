@@ -4,6 +4,7 @@ import { getSettings, loadSnapshot, saveSettings, type Snapshot } from './db/rep
 import { DEFAULT_SETTINGS, type Settings } from './domain/types';
 import { detectSpeechCapabilities, type SpeechCapabilities } from './speech/capabilities';
 import { loadVoices } from './speech/tts';
+import { pinWaitMs, verifyPin } from './domain/parental';
 
 export interface Route {
   path: string;
@@ -36,6 +37,28 @@ interface AppCtx {
   caps: SpeechCapabilities;
   voices: SpeechSynthesisVoice[];
   haptic: () => void;
+  /** A parent PIN is set and the parent area is currently locked. */
+  parentLocked: boolean;
+  /** Try to unlock the parent area for 5 minutes. 'wait' = too many wrong attempts. */
+  unlockParent: (pin: string) => Promise<'ok' | 'wrong' | 'wait'>;
+  lockParent: () => void;
+}
+
+const UNLOCK_MS = 5 * 60_000;
+const FAILS_KEY = 'pet.pinFails';
+function readFails(): { n: number; at: number } {
+  try {
+    return JSON.parse(localStorage.getItem(FAILS_KEY) ?? '') as { n: number; at: number };
+  } catch {
+    return { n: 0, at: 0 };
+  }
+}
+function writeFails(v: { n: number; at: number }) {
+  try {
+    localStorage.setItem(FAILS_KEY, JSON.stringify(v));
+  } catch {
+    /* ignore */
+  }
 }
 
 const Ctx = createContext<AppCtx | null>(null);
@@ -69,6 +92,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const toastTimer = useRef<number | undefined>(undefined);
   const hapticRef = useRef<HTMLLabelElement>(null);
+  const [unlockedUntil, setUnlockedUntil] = useState(0);
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!unlockedUntil) return;
+    const t = window.setTimeout(() => setTick((x) => x + 1), Math.max(0, unlockedUntil - Date.now()) + 50);
+    return () => window.clearTimeout(t);
+  }, [unlockedUntil]);
+  const parentLocked = !!settings.parentLock && Date.now() >= unlockedUntil;
+  const unlockParent = useCallback(
+    async (pin: string): Promise<'ok' | 'wrong' | 'wait'> => {
+      const f = readFails();
+      if (pinWaitMs(f.n, f.at, Date.now()) > 0) return 'wait';
+      if (await verifyPin(pin, settings.parentLock)) {
+        writeFails({ n: 0, at: 0 });
+        setUnlockedUntil(Date.now() + UNLOCK_MS);
+        return 'ok';
+      }
+      writeFails({ n: f.n + 1, at: Date.now() });
+      return 'wrong';
+    },
+    [settings.parentLock],
+  );
+  const lockParent = useCallback(() => setUnlockedUntil(0), []);
 
   useEffect(() => {
     getSettings().then(setSettings);
@@ -130,8 +176,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       caps,
       voices,
       haptic,
+      parentLocked,
+      unlockParent,
+      lockParent,
     }),
-    [settings, updateSettings, route, dataVersion, toast, caps, voices, haptic],
+    [settings, updateSettings, route, dataVersion, toast, caps, voices, haptic, parentLocked, unlockParent, lockParent],
   );
 
   return (
