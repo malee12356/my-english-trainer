@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { buildPrompt, contentKindsFor, DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS, type ContentKind, type PromptOptions } from '../domain/promptBuilder';
 import { topicsFor } from '../domain/topics';
+import { gradeInfo } from '../domain/grades';
 import { CEFR_LEVELS } from '../domain/types';
 import { useApp } from '../state';
 import { NavBar } from '../ui/components';
@@ -21,10 +22,12 @@ function loadOpts(audience: 'adult' | 'kid'): PromptOptions {
 export function PromptAssistant() {
   const { L, lang, toast, settings } = useApp();
   const audience = settings.profile === 'kid' ? 'kid' : 'adult';
-  const [o, setO] = useState<PromptOptions>(() => loadOpts(audience));
+  const [opts, setO] = useState<PromptOptions>(() => loadOpts(audience));
+  const grade = gradeInfo(settings.kidGrade);
+  const o: PromptOptions = { ...opts, grade: grade.id };
   const prompt = useMemo(() => buildPrompt(o), [o]);
   const set = (patch: Partial<PromptOptions>) => {
-    const next = { ...o, ...patch };
+    const next = { ...opts, ...patch };
     setO(next);
     try {
       localStorage.setItem(storeKey(audience), JSON.stringify(next));
@@ -58,7 +61,7 @@ export function PromptAssistant() {
           <label className="field"><span>{L('Niveau', 'Level')}</span>
             <select className="select" value={o.level} onChange={(e) => set({ level: e.target.value as PromptOptions['level'] })}>
               <option value="auto">{L('automatisch', 'automatic')}</option>
-              {CEFR_LEVELS.filter((l) => (audience === 'kid' ? ['A1', 'A2', 'B1'].includes(l) : l !== 'A1' && l !== 'C2')).map((l) => <option key={l} value={l}>{l}</option>)}
+              {CEFR_LEVELS.filter((l) => (audience === 'kid' ? grade.levels.includes(l) : l !== 'A1' && l !== 'C2')).map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </label>
         </div>

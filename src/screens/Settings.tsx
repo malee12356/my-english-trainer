@@ -1,14 +1,37 @@
 import { useEffect, useState } from 'react';
-import { loadStarterContent, requestPersistentStorage } from '../db/repo';
+import { loadStarterContent, removeStarterPack, requestPersistentStorage, starterPackInfo, type StarterPack } from '../db/repo';
+import { gradeInfo, KID_GRADES, type KidGrade } from '../domain/grades';
 import { DURATIONS } from '../domain/methods';
 import { useApp } from '../state';
 import { chosenVoice, englishVoices, speak, ttsSupported } from '../speech/tts';
-import { ListLink, Segmented, Toggle } from '../ui/components';
+import { ListLink, Segmented, Sheet, Toggle, useConfirm } from '../ui/components';
 
 export function SettingsScreen() {
   const { L, settings, updateSettings, voices, caps, bump, toast } = useApp();
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
+  const [packs, setPacks] = useState<Record<StarterPack, { count: number; practised: number }> | null>(null);
+  const { confirm, dialog } = useConfirm();
+  const grade = gradeInfo(settings.kidGrade);
+  const openPacks = async () => setPacks({ kids: await starterPackInfo('kids'), adult: await starterPackInfo('adult') });
+  const removePack = async (pack: StarterPack) => {
+    const info = packs?.[pack];
+    if (!info || info.count === 0) return;
+    const name = pack === 'kids' ? L('Schüler-Vokabeln', 'pupil vocabulary') : L('Erwachsenen-Standardvokabeln', 'adult default vocabulary');
+    const ok = await confirm(
+      L(`${info.count} ${name} entfernen?`, `Remove ${info.count} ${name}?`),
+      L(
+        `Entfernt nur die von der App mitgelieferten Einträge – eigene Importe und selbst angelegte Vokabeln bleiben. ${info.practised ? `${info.practised} davon wurden schon geübt; deren Lernstand wird mit entfernt.` : 'Keiner davon wurde bisher geübt.'}`,
+        `Removes only the entries shipped with the app – your own imports stay. ${info.practised ? `${info.practised} of them were practised; their progress is removed too.` : 'None of them was practised yet.'}`,
+      ),
+      { danger: true, ok: L('Entfernen', 'Remove') },
+    );
+    if (!ok) return;
+    const n = await removeStarterPack(pack);
+    bump();
+    toast(L(`${n} Einträge entfernt`, `${n} items removed`));
+    await openPacks();
+  };
   const tts = ttsSupported();
   const enVoices = englishVoices(voices).filter((v) => v.lang.replace('_', '-').toLowerCase() === settings.accent.toLowerCase());
   const otherVoices = englishVoices(voices).filter((v) => !enVoices.includes(v));
@@ -45,9 +68,17 @@ export function SettingsScreen() {
           label={L('Profil', 'Profile')}
           value={settings.profile ?? 'adult'}
           onChange={(v) => updateSettings({ profile: v, profileChosen: true })}
-          options={[{ value: 'adult', label: L('Erwachsene', 'Adults') }, { value: 'kid', label: L('Kinder (Kl. 5–6) 🤖', 'Kids (years 5–6) 🤖') }]}
+          options={[{ value: 'adult', label: L('Erwachsene', 'Adults') }, { value: 'kid', label: L('Schüler 🤖', 'Pupils 🤖') }]}
         />
-        <span className="tiny muted">{L('Kinder: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Lernfortschritt bleibt erhalten. Kinder-Vokabeln: unten unter „Daten & Import“.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept. Kids vocabulary: below under “Data & import”.')}</span>
+        {settings.profile === 'kid' && (
+          <Segmented
+            label={L('Klassenstufe', 'School year')}
+            value={grade.id}
+            onChange={(v: KidGrade) => updateSettings({ kidGrade: v })}
+            options={KID_GRADES.map((g) => ({ value: g.id, label: L(g.de, g.en) }))}
+          />
+        )}
+        <span className="tiny muted">{L('Schüler: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Die Klassenstufe steuert ChatGPT-Prompt und Niveau. Lernfortschritt bleibt erhalten. Vokabelpakete: unten unter „Daten & Import“.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept. Kids vocabulary: below under “Data & import”.')}</span>
         <span className="tiny muted">Version {__APP_VERSION__}</span>
       </div>
 
@@ -57,7 +88,8 @@ export function SettingsScreen() {
         <ListLink to="/import" icon="📥" title={L('Datei / Text importieren', 'Import file / text')} subtitle="JSON · CSV" />
         <ListLink to="/item/new" icon="✍️" title={L('Manuell hinzufügen', 'Add manually')} />
         <ListLink to="/backup" icon="💾" title={L('Backup & Wiederherstellung', 'Backup & restore')} subtitle={settings.lastBackupAt ? `${L('Letztes Backup', 'Last backup')}: ${new Date(settings.lastBackupAt).toLocaleDateString()}` : L('Noch kein Backup', 'No backup yet')} />
-        <ListLink onClick={async () => { const r = await loadStarterContent('kid'); bump(); toast(L(`${r.added} Kinder-Vokabeln geladen`, `${r.added} kids items loaded`)); }} icon="🎒" title={L('Kinder-Vokabeln laden (Kl. 5–6)', 'Load kids vocabulary (years 5–6)')} subtitle={L('≈ 120 Wörter und Sätze: Schule, Familie & Tiere, Alltag', '≈ 120 words and sentences: school, family & animals, daily life')} />
+        <ListLink onClick={async () => { const r = await loadStarterContent('kid', grade.id); bump(); toast(L(`${r.added} Schüler-Vokabeln geladen`, `${r.added} pupil items loaded`)); }} icon="🎒" title={L(`Schüler-Vokabeln laden (${grade.de})`, `Load pupil vocabulary (${grade.en})`)} subtitle={L('Schule, Familie & Tiere, Alltag – Stufe wie oben beim Profil gewählt', 'School, family & animals, daily life – grade as chosen above')} />
+        <ListLink onClick={openPacks} icon="🧹" title={L('Standardvokabeln entfernen …', 'Remove default vocabulary …')} subtitle={L('Mitgelieferte Pakete wieder löschen (eigene Importe bleiben)', 'Delete shipped packs again (own imports stay)')} />
         <ListLink onClick={async () => { const r = await loadStarterContent('adult'); bump(); toast(L(`${r.added} neue Starter-Einträge`, `${r.added} new starter items`)); }} icon="🌱" title={L('Standardvokabeln laden', 'Load default vocabulary')} subtitle={L('≈ 160 allgemeine Einträge für alle Themenmodi – nur fehlende werden ergänzt', '≈ 160 generic items for all topic modes – only missing ones are added')} />
       </div>
 
@@ -138,6 +170,19 @@ export function SettingsScreen() {
       <div className="list">
         <ListLink to="/info" icon="ℹ️" title={L('Installation, Grenzen & Datenschutz', 'Installation, limits & privacy')} subtitle={`Version ${__APP_VERSION__}`} />
       </div>
+      <Sheet open={!!packs} onClose={() => setPacks(null)} title={L('Standardvokabeln entfernen', 'Remove default vocabulary')}>
+        <div className="stack">
+          <p className="small muted" style={{ margin: 0 }}>{L('Eigene Importe und selbst angelegte Einträge werden nie entfernt.', 'Your own imports and manual items are never removed.')}</p>
+          <button className="btn block danger" disabled={!packs?.kids.count} onClick={() => removePack('kids')}>
+            🎒 {L(`Schüler-Vokabeln entfernen (${packs?.kids.count ?? 0})`, `Remove pupil vocabulary (${packs?.kids.count ?? 0})`)}
+          </button>
+          <button className="btn block danger" disabled={!packs?.adult.count} onClick={() => removePack('adult')}>
+            🌱 {L(`Erwachsenen-Standardvokabeln entfernen (${packs?.adult.count ?? 0})`, `Remove adult default vocabulary (${packs?.adult.count ?? 0})`)}
+          </button>
+          <button className="btn block secondary" onClick={() => setPacks(null)}>{L('Schließen', 'Close')}</button>
+        </div>
+      </Sheet>
+      {dialog}
     </main>
   );
 }

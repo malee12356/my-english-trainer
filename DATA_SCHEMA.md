@@ -57,7 +57,7 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (Erwachsene: `everyday`, 
 | `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct` |
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
-| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`) |
+| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`, `kidGrade` = `5-6`/`7-8`/`9-10`) |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TrainerDB, setDbForTests } from '../../src/db/db';
-import { chooseProfile, ensureSetup, getSettings, loadSnapshot, resolveProfileOnStart, addItem } from '../../src/db/repo';
+import { chooseProfile, ensureSetup, getSettings, loadSnapshot, resolveProfileOnStart, addItem, loadStarterContent, removeStarterPack, starterPackInfo, recordAnswer, startSession } from '../../src/db/repo';
+import { STARTER_KIDS_7_8, STARTER_KIDS_9_10 } from '../../src/data/starterKidsUpper';
+import { gradeInfo, KID_STARTER_SOURCES } from '../../src/domain/grades';
 import { STARTER_KIDS } from '../../src/data/starterKids';
 import { parseImport, planImport } from '../../src/domain/importer';
 import { BADGES, badgeStats, dailyMissions, earnedBadges, levelInfo, robotStage, sessionStars, totalXp, xpForAnswer, xpForLevel } from '../../src/domain/gamification';
@@ -116,3 +118,66 @@ describe('profile on first start', () => {
     expect((await loadSnapshot()).items).toHaveLength(1);
   });
 });
+
+describe('grade bands', () => {
+  it('upper-grade packs are valid, unique and use the kid topics', () => {
+    for (const pack of [STARTER_KIDS_7_8, STARTER_KIDS_9_10]) {
+      const plan = planImport(parseImport(JSON.stringify(pack)), [], []);
+      expect(plan.counts.invalid).toBe(0);
+      expect(plan.counts.duplicate).toBe(0);
+      expect(plan.newCategories).toEqual([]);
+      expect(pack.length).toBeGreaterThanOrEqual(40);
+    }
+    expect(KID_STARTER_SOURCES).toEqual(['starter-kids', 'starter-kids-7-8', 'starter-kids-9-10']);
+  });
+  it('adapts the pupil prompt to the grade', () => {
+    const p78 = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, grade: '7-8', kinds: ['grammar'] });
+    expect(p78).toContain('school years 7–8');
+    expect(p78).toContain('A2–B1');
+    expect(p78).toContain('present perfect');
+    expect(p78).toContain('13-year-old');
+    const p910 = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, grade: '9-10' });
+    expect(p910).toContain('school years 9–10');
+    expect(p910).toContain('"level": "B1 | B2 | C1"');
+    expect(gradeInfo(undefined).id).toBe('5-6');
+  });
+});
+
+describe('default packs: load per grade and remove again', () => {
+  let n = 0;
+  beforeEach(async () => {
+    setDbForTests(new TrainerDB(`packs-${++n}`));
+    await ensureSetup();
+  });
+  it('loads the pack of the chosen grade', async () => {
+    await chooseProfile('kid', '9-10');
+    expect((await getSettings()).kidGrade).toBe('9-10');
+    const snap = await loadSnapshot();
+    expect(snap.items.length).toBe(STARTER_KIDS_9_10.length);
+    expect(snap.items.every((i) => i.source === 'starter-kids-9-10')).toBe(true);
+  });
+  it('removes only the shipped pupil pack – own items and adult pack stay', async () => {
+    await saveAdultWithKidsLoaded();
+    const own = await addItem({ english: 'my own word', german: 'mein Wort' });
+    const before = await starterPackInfo('kids');
+    expect(before.count).toBe(STARTER_KIDS.length);
+    // practise one kid item → counted as practised
+    const kidItem = (await loadSnapshot()).items.find((i) => i.source === 'starter-kids')!;
+    const session = await startSession('all', 'auto');
+    await recordAnswer({ task: { itemId: kidItem.id, method: 'flashcards', skill: 'recall', direction: 'de-en', practice: false, isNew: true }, grade: 3, responseMs: 1, session, alreadyAnsweredInSession: false });
+    expect((await starterPackInfo('kids')).practised).toBe(1);
+    const removed = await removeStarterPack('kids');
+    expect(removed).toBe(STARTER_KIDS.length);
+    const snap = await loadSnapshot();
+    expect(snap.items.some((i) => i.id === own.id)).toBe(true);
+    expect(snap.items.some((i) => KID_STARTER_SOURCES.includes(i.source ?? ''))).toBe(false);
+    expect((await starterPackInfo('adult')).count).toBeGreaterThan(100);
+    expect(snap.progress.some((p) => p.itemId === kidItem.id)).toBe(false);
+    expect(snap.logs).toHaveLength(1); // history stays for statistics
+  });
+});
+
+async function saveAdultWithKidsLoaded() {
+  await chooseProfile('adult');
+  await loadStarterContent('kid', '5-6');
+}

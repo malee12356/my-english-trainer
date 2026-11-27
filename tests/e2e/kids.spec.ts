@@ -4,7 +4,7 @@ import { finishFlashcardSession, horizontalOverflow, presetProfile } from './hel
 test('first start asks who is learning; kids get Robo, missions and school vocabulary', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('Wer lernt mit dieser App?')).toBeVisible();
-  await page.getByRole('button', { name: /Für Kinder/ }).click();
+  await page.getByRole('button', { name: 'Für Schüler, Klasse 5–6' }).click();
   await expect(page.getByRole('button', { name: "🚀 Los geht's!" })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Mini-Robo' }).first()).toBeVisible();
   await expect(page.getByText('Missionen für heute')).toBeVisible();
@@ -12,8 +12,10 @@ test('first start asks who is learning; kids get Robo, missions and school vocab
   expect(await page.evaluate(() => document.documentElement.dataset.profile)).toBe('kid');
   expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   await page.goto('/#/vocab');
-  await expect(page.getByText('pencil case')).toBeVisible();
-  await expect(page.getByText('boundary conditions')).toHaveCount(0);
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('pencil case');
+  await expect(page.getByText('pencil case', { exact: true })).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('boundary conditions');
+  await expect(page.getByText('Keine Treffer')).toBeVisible();
   await page.goto('/#/learn');
   await expect(page.getByRole('button', { name: /Schule & Unterricht/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Engineering/ })).toHaveCount(0);
@@ -59,7 +61,42 @@ test('profile can be switched in settings without losing progress', async ({ pag
   await page.goto('/#/settings');
   // the profile switch is the first control on the settings page
   await expect(page.getByRole('heading', { name: 'Profil – wer lernt?' })).toBeInViewport();
-  await page.getByRole('group', { name: 'Profil' }).getByRole('button', { name: /Kinder/ }).click();
+  await page.getByRole('group', { name: 'Profil' }).getByRole('button', { name: /Schüler/ }).click();
   await page.goto('/#/home');
   await expect(page.getByRole('button', { name: "🚀 Los geht's!" })).toBeVisible();
+});
+
+test('upper school years: choose 9–10 at start, prompt and vocabulary follow the grade', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Für Schüler, Klasse 9–10' }).click();
+  await expect(page.getByRole('button', { name: "🚀 Los geht's!" })).toBeVisible();
+  await page.goto('/#/vocab');
+  await expect(page.getByText('work experience')).toBeVisible();
+  await expect(page.getByText('pencil case')).toHaveCount(0);
+  await page.goto('/#/prompt');
+  await expect(page.locator('pre.prompt')).toContainText('school years 9–10');
+  await page.goto('/#/settings');
+  await page.getByRole('group', { name: 'Klassenstufe' }).getByRole('button', { name: 'Klasse 7–8' }).click();
+  await page.goto('/#/prompt');
+  await expect(page.locator('pre.prompt')).toContainText('school years 7–8');
+});
+
+test('pupil vocabulary loaded by mistake in the adult profile can be removed again', async ({ page }) => {
+  await presetProfile(page, 'adult');
+  await page.goto('/');
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: /Schüler-Vokabeln laden/ }).click();
+  await expect(page.getByText(/Schüler-Vokabeln geladen/)).toBeVisible();
+  await page.getByRole('button', { name: /Standardvokabeln entfernen/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Standardvokabeln entfernen' });
+  await sheet.getByRole('button', { name: /Schüler-Vokabeln entfernen \(\d+\)/ }).click();
+  await page.getByRole('dialog').filter({ hasText: 'Entfernt nur die von der App' }).getByRole('button', { name: 'Entfernen' }).click();
+  await expect(page.getByText(/Einträge entfernt/)).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Schüler-Vokabeln entfernen (0)' })).toBeDisabled();
+  await page.goto('/#/vocab');
+  // the list shows 100 entries per page – use the search to check specific items
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('pencil case');
+  await expect(page.getByText('Keine Treffer')).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('boundary conditions');
+  await expect(page.getByText('boundary conditions', { exact: true })).toBeVisible();
 });
