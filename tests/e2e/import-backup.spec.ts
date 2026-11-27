@@ -79,7 +79,10 @@ test('full backup export and restore into an empty app', async ({ page, browser 
 
   const ctx2 = await browser.newContext();
   const p2 = await ctx2.newPage();
-  await p2.goto('/#/backup');
+  await p2.goto('/');
+  // a new device: the first-start question offers restoring a backup
+  await p2.getByRole('button', { name: /Ich habe ein Backup/ }).click();
+  await expect(p2.getByText(/Letztes Backup/)).toBeVisible();
   await p2.getByLabel('Backup-Datei wählen').setInputFiles(file!);
   await expect(p2.getByText('Backup gültig')).toBeVisible();
   await expect(p2.getByText(/2 Einträge/)).toBeVisible();

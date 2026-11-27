@@ -16,6 +16,8 @@ import { GapFill, Writing } from './exercises/Writing';
 import { Speaking } from './exercises/Speaking';
 import { detectSpeechCapabilities } from '../speech/capabilities';
 import type { ExerciseProps } from './exercises/shared';
+import { xpForAnswer, SESSION_BONUS_XP, MIN_ANSWERS_FOR_BONUS } from '../domain/gamification';
+import { KidSummary } from './kids/KidSummary';
 
 const MAX_IDLE_MS = 60_000;
 const MAX_REPEATS = 2;
@@ -30,7 +32,8 @@ export function SessionScreen() {
   const [queue, setQueue] = useState<Task[] | null>(null);
   const [idx, setIdx] = useState(0);
   const [session, setSession] = useState<StudySession | null>(null);
-  const [stats, setStats] = useState({ answered: 0, correct: 0, activeMs: 0 });
+  const [stats, setStats] = useState({ answered: 0, correct: 0, activeMs: 0, xp: 0 });
+  const kid = settings.profile === 'kid';
   const [saving, setSaving] = useState(false);
   const answered = useRef(new Set<string>());
   const repeats = useRef(new Map<string, number>());
@@ -90,7 +93,7 @@ export function SessionScreen() {
     progressById.set(key, res.progress);
     const activeMs = stats.activeMs + Math.min(responseMs, MAX_IDLE_MS);
     await updateSession(session.id, { activeMs, endedAt: new Date().toISOString() });
-    setStats((s) => ({ answered: s.answered + 1, correct: s.correct + (grade >= 2 ? 1 : 0), activeMs }));
+    setStats((s) => ({ answered: s.answered + 1, correct: s.correct + (grade >= 2 ? 1 : 0), activeMs, xp: s.xp + xpForAnswer(grade) }));
     // Re-ask forgotten items later in this session (practice only – schedule is protected).
     if (grade === 1) {
       const n = repeats.current.get(key) ?? 0;
@@ -132,6 +135,11 @@ export function SessionScreen() {
             {topicLabel(topic, snap.categories, lang)} · {methodLabel(method, lang)} · {Math.min(idx + 1, queue.length)}/{queue.length}
           </div>
         </div>
+        {kid && (
+          <span key={stats.xp} className="xp-pill xp-pop" aria-label={`${stats.xp} XP`}>
+            ⭐ {stats.xp}
+          </span>
+        )}
       </div>
 
       {queue.length === 0 && (
@@ -160,7 +168,10 @@ export function SessionScreen() {
         </div>
       )}
 
-      {done && queue.length > 0 && (
+      {done && queue.length > 0 && kid && (
+        <KidSummary before={snap} answered={stats.answered} correct={stats.correct} xpGained={stats.xp + (stats.answered >= MIN_ANSWERS_FOR_BONUS ? SESSION_BONUS_XP : 0)} onDone={finish} />
+      )}
+      {done && queue.length > 0 && !kid && (
         <div className="stack" style={{ marginTop: 12 }}>
           <div className="hero center">
             <div style={{ fontSize: 48 }} aria-hidden="true">🎉</div>

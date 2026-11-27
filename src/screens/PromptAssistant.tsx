@@ -1,31 +1,33 @@
 import { useMemo, useState } from 'react';
-import { buildPrompt, CONTENT_KINDS, DEFAULT_PROMPT_OPTIONS, type ContentKind, type PromptOptions } from '../domain/promptBuilder';
-import { TOPIC_MODES } from '../domain/topics';
+import { buildPrompt, contentKindsFor, DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS, type ContentKind, type PromptOptions } from '../domain/promptBuilder';
+import { topicsFor } from '../domain/topics';
 import { CEFR_LEVELS } from '../domain/types';
 import { useApp } from '../state';
 import { NavBar } from '../ui/components';
 import { copyText } from '../ui/files';
 import { IconCopy } from '../ui/icons';
 
-const STORE_KEY = 'pet.promptOptions';
-function loadOpts(): PromptOptions {
+const storeKey = (a: 'adult' | 'kid') => (a === 'kid' ? 'pet.promptOptions.kid' : 'pet.promptOptions');
+function loadOpts(audience: 'adult' | 'kid'): PromptOptions {
+  const defaults = audience === 'kid' ? DEFAULT_KID_PROMPT_OPTIONS : DEFAULT_PROMPT_OPTIONS;
   try {
-    const raw = localStorage.getItem(STORE_KEY);
-    return raw ? { ...DEFAULT_PROMPT_OPTIONS, ...(JSON.parse(raw) as Partial<PromptOptions>) } : DEFAULT_PROMPT_OPTIONS;
+    const raw = localStorage.getItem(storeKey(audience));
+    return { ...defaults, ...(raw ? (JSON.parse(raw) as Partial<PromptOptions>) : {}), audience };
   } catch {
-    return DEFAULT_PROMPT_OPTIONS;
+    return { ...defaults, audience };
   }
 }
 
 export function PromptAssistant() {
-  const { L, lang, toast } = useApp();
-  const [o, setO] = useState<PromptOptions>(loadOpts);
+  const { L, lang, toast, settings } = useApp();
+  const audience = settings.profile === 'kid' ? 'kid' : 'adult';
+  const [o, setO] = useState<PromptOptions>(() => loadOpts(audience));
   const prompt = useMemo(() => buildPrompt(o), [o]);
   const set = (patch: Partial<PromptOptions>) => {
     const next = { ...o, ...patch };
     setO(next);
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(next));
+      localStorage.setItem(storeKey(audience), JSON.stringify(next));
     } catch {
       /* per-device convenience only */
     }
@@ -42,6 +44,10 @@ export function PromptAssistant() {
         <li>{L('Hier „Zum Import“ → „Einfügen“ → „Aus Zwischenablage einfügen“ → Vorschau prüfen → bestätigen.', 'Here: “To import” → “Paste” → “Paste from clipboard” → check preview → confirm.')}</li>
       </ol>
 
+      <div className="banner info small" style={{ marginBottom: 12 }}>
+        <span aria-hidden="true">📸</span>
+        <span className="grow">{L('Tipp: Ein Foto der Vokabelliste (z. B. aus dem Englischbuch) in ChatGPT anhängen und unten „Vokabelliste (Foto/Datei)“ auswählen – ChatGPT macht daraus die Importdatei.', 'Tip: attach a photo of a word list (e.g. from the English book) in ChatGPT and select “Word list (photo/file)” below.')}</span>
+      </div>
       <div className="card stack">
         <div className="grid-2">
           <label className="field"><span>{L('Anzahl', 'Count')}</span>
@@ -52,14 +58,14 @@ export function PromptAssistant() {
           <label className="field"><span>{L('Niveau', 'Level')}</span>
             <select className="select" value={o.level} onChange={(e) => set({ level: e.target.value as PromptOptions['level'] })}>
               <option value="auto">{L('automatisch', 'automatic')}</option>
-              {CEFR_LEVELS.filter((l) => l !== 'A1' && l !== 'C2').map((l) => <option key={l} value={l}>{l}</option>)}
+              {CEFR_LEVELS.filter((l) => (audience === 'kid' ? ['A1', 'A2', 'B1'].includes(l) : l !== 'A1' && l !== 'C2')).map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </label>
         </div>
         <label className="field"><span>{L('Thema', 'Topic')}</span>
           <select className="select" value={o.topic} onChange={(e) => set({ topic: e.target.value })}>
             <option value="mixed">{L('Gemischt', 'Mixed')}</option>
-            {TOPIC_MODES.map((t) => <option key={t.id} value={t.id}>{lang === 'de' ? t.nameDe : t.name}</option>)}
+            {topicsFor(audience).map((t) => <option key={t.id} value={t.id}>{lang === 'de' ? t.nameDe : t.name}</option>)}
           </select>
         </label>
         <label className="field"><span>{L('Lernmodus-Fokus', 'Practice focus')}</span>
@@ -74,7 +80,7 @@ export function PromptAssistant() {
         <div className="field">
           <span>{L('Inhalte', 'Content')}</span>
           <div className="chips wrap">
-            {CONTENT_KINDS.map((k) => (
+            {contentKindsFor(audience).map((k) => (
               <button key={k.id} type="button" className="chip" aria-pressed={o.kinds.includes(k.id)} onClick={() => toggleKind(k.id)}>
                 {lang === 'de' ? k.de : k.en}
               </button>

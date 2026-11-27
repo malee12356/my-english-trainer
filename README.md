@@ -4,7 +4,7 @@ Offline-first Progressive Web App zum Englischlernen (Deutsch → Englisch, Ziel
 
 Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen individuelle Lerninhalte, die per JSON/CSV importiert und hier mit Spaced Repetition (FSRS) gelernt werden.
 
-> Status: **v0.3.0 – Phase 1 abgeschlossen, Phase 2 in Arbeit (Speaking Mode fertig)** (siehe [ROADMAP.md](ROADMAP.md)).
+> Status: **v0.4.0 – Phase 1 abgeschlossen, Phase 2 in Arbeit (Speaking Mode fertig), Kindermodus** (siehe [ROADMAP.md](ROADMAP.md)).
 >
 > App-URL (nach Merge auf `main` und einmaliger Pages-Aktivierung): **https://malee12356.github.io/my-english-trainer/**
 
@@ -17,6 +17,7 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 | Themenmodi | Everyday, Business, Engineering, Meeting, Handball (als Kategorien, mehrfach zuordenbar), Personal Weakness Mode, eigene Kategorien. Driving Mode: transparent als „Phase 3“ markiert |
 | Lernmethoden | Karteikarten (EN→DE, DE→EN, zufällig; 4 Bewertungsstufen), Writing Mode (Tippfehler, Alternativen, Satzzeichen, Diff-Darstellung), Lückentext (3 Stufen), Satzbau, Listening (Auswahl & Diktat, Tempo), Speaking (Spracherkennung mit Einwilligung, 3 Versuche, Schreib-Fallback). Aussprache/Free Speaking: als geplant markiert |
 | Wiederholung | FSRS (ts-fsrs), getrennt je Fähigkeit (Verstehen, Abrufen, Schreiben, Hören), Sitzungsschutz gegen Intervall-Aufblähung, Tagesplanung nach Zeitbudget |
+| Kindermodus | Profil „Kinder (Klasse 5–6)“: Roboter-Maskottchen Robo, XP, Level, Sterne, Abzeichen, Tagesmissionen, buntes Design, Themen Schule / Familie & Tiere / Alltag mit ~120 Standardvokabeln, Schüler-Prompt für ChatGPT |
 | Standardvokabeln | 163 allgemeine Einträge für alle Themenmodi, beim ersten Start automatisch geladen (einmalig); fehlende jederzeit ergänzbar |
 | Import | JSON & CSV aus Datei (Dateien-App) oder Zwischenablage, Validierung, Vorschau, Duplikate, Aktualisierungen, Kategorien automatisch, Fortschritt bleibt erhalten, Bestätigung nötig |
 | ChatGPT-Assistent | Konfigurierbarer Prompt (Anzahl, Thema, Fokus, Niveau, Inhaltsarten) zum Kopieren |
@@ -49,8 +50,8 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 ## Inhalte aus ChatGPT importieren
 
 1. Einstellungen → **ChatGPT-Import** → Prompt konfigurieren → **Prompt kopieren**.
-2. In das English-Projekt in ChatGPT einfügen.
-3. Die JSON-Antwort kopieren **oder** als `.json` in der Dateien-App speichern.
+2. In das English-Projekt in ChatGPT einfügen. Tipp: ein **Foto der Vokabelliste** aus dem Englischbuch anhängen und „Vokabelliste (Foto/Datei)“ wählen.
+3. In der Antwort beim **Codeblock oben rechts auf „Kopieren“** tippen (nicht die ganze Nachricht). Wurde doch die ganze Nachricht kopiert, repariert die App das meist automatisch.
 4. Einstellungen → **Datei / Text importieren** → Vorschau prüfen → **Import bestätigen**.
 
 Details: [IMPORT_GUIDE.md](IMPORT_GUIDE.md), Schema: [DATA_SCHEMA.md](DATA_SCHEMA.md), Beispiele: [`docs/examples/`](docs/examples).

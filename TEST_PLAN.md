@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.3.0):** Typecheck ✅ · 94/94 Unit-/Integrationstests ✅ · 33/33 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.4.0):** Typecheck ✅ · 109/109 Unit-/Integrationstests ✅ · 39/39 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -81,6 +81,14 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] I8 Mit Bluetooth-Headset: Erkennung über Headset-Mikrofon
 - [ ] I9 „Mit iPhone-Diktierfunktion antworten“: Tastatur-🎤 funktioniert in der installierten App, Antwort wird ausgewertet
 - [ ] I10 Einstellungen → Spracherkennung testen: in Safari **und** in der installierten App ausführen, Protokolle vergleichen
+
+### K. Kindermodus (v0.4.0) – auf dem iPhone des Kindes
+- [ ] K1 App neu installieren bzw. in Safari frisch öffnen → Frage „Wer lernt mit dieser App?“ → „Für Kinder“
+- [ ] K2 Startseite: Robo, Level, Missionen, Themen-Kacheln bunt und gut lesbar (hell und dunkel)
+- [ ] K3 „Los geht's!“ → Runde spielen → Sterne, Konfetti, +XP; nach der ersten Runde Abzeichen „Erster Start“
+- [ ] K4 Tab „Erfolge“: Level, Robo, Abzeichen mit Fortschritt
+- [ ] K5 ChatGPT-Import: Prompt kopieren → in ChatGPT mit Foto der Vokabelliste senden → Codeblock kopieren → importieren
+- [ ] K6 Kopieren der **ganzen** ChatGPT-Nachricht → Import funktioniert mit Hinweis „automatisch repariert“
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

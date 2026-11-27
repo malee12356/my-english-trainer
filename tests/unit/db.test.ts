@@ -29,7 +29,7 @@ const task = (itemId: string): Task => ({ itemId, method: 'flashcards', skill: '
 describe('database & import integration', () => {
   it('creates built-in topic categories and default settings', async () => {
     const snap = await loadSnapshot();
-    expect(snap.categories.map((c) => c.id).sort()).toEqual(['business', 'engineering', 'everyday', 'handball', 'meeting']);
+    expect(snap.categories.map((c) => c.id).sort()).toEqual(['business', 'daily', 'engineering', 'everyday', 'family', 'handball', 'meeting', 'school']);
     expect(snap.settings.uiLang).toBe('de');
   });
 

@@ -7,8 +7,14 @@ import { TOPIC_MODES, topicLabel } from '../domain/topics';
 import { navigate, useApp, useSnapshot } from '../state';
 import { BarChart, Empty, ProgressRing } from '../ui/components';
 import { IconFlame, IconPlay } from '../ui/icons';
+import { KidHome } from './kids/KidHome';
 
 export function Home() {
+  const { settings } = useApp();
+  return settings.profile === 'kid' ? <KidHome /> : <AdultHome />;
+}
+
+function AdultHome() {
   const { L, lang, settings, updateSettings, bump, toast } = useApp();
   const snap = useSnapshot();
   const [busy, setBusy] = useState(false);

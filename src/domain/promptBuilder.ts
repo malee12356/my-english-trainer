@@ -2,7 +2,7 @@
 import { TOPIC_MODES } from './topics';
 import type { CefrLevel } from './types';
 
-export type ContentKind = 'vocabulary' | 'phrases' | 'sentences' | 'grammar' | 'mistakes' | 'technical';
+export type ContentKind = 'vocabulary' | 'phrases' | 'sentences' | 'grammar' | 'mistakes' | 'technical' | 'booklist';
 
 export const CONTENT_KINDS: { id: ContentKind; de: string; en: string }[] = [
   { id: 'vocabulary', de: 'Vokabeln', en: 'Vocabulary' },
@@ -11,7 +11,13 @@ export const CONTENT_KINDS: { id: ContentKind; de: string; en: string }[] = [
   { id: 'grammar', de: 'Grammatik', en: 'Grammar' },
   { id: 'mistakes', de: 'Persönliche Fehler', en: 'Personal mistakes' },
   { id: 'technical', de: 'Technische Begriffe', en: 'Technical terms' },
+  { id: 'booklist', de: 'Vokabelliste (Foto/Datei)', en: 'Word list (photo/file)' },
 ];
+
+/** Content kinds offered per profile. */
+export function contentKindsFor(audience: 'adult' | 'kid') {
+  return CONTENT_KINDS.filter((k) => audience === 'adult' || k.id !== 'technical');
+}
 
 export interface PromptOptions {
   count: number;
@@ -20,6 +26,8 @@ export interface PromptOptions {
   level: CefrLevel | 'auto';
   kinds: ContentKind[];
   extraNote?: string;
+  /** 'kid' = pupil in years 5–6 (kids profile). */
+  audience?: 'adult' | 'kid';
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -30,6 +38,15 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
   kinds: ['vocabulary', 'phrases', 'sentences', 'mistakes'],
 };
 
+export const DEFAULT_KID_PROMPT_OPTIONS: PromptOptions = {
+  count: 20,
+  topic: 'mixed',
+  focusMethod: 'mixed',
+  level: 'auto',
+  kinds: ['vocabulary', 'sentences', 'mistakes'],
+  audience: 'kid',
+};
+
 const KIND_TEXT: Record<ContentKind, string> = {
   vocabulary: 'single words and collocations (type "word")',
   phrases: 'useful phrases and chunks (type "phrase")',
@@ -38,6 +55,20 @@ const KIND_TEXT: Record<ContentKind, string> = {
   mistakes:
     'corrections of mistakes I actually made in our past conversations or exercises in this project (type "correction", put the wrong version in "common_mistake")',
   technical: 'technical terms embedded in complete technical sentences (type "phrase" or "sentence")',
+  booklist:
+    'ALL entries of the vocabulary list, photo or file that I attach to this message or uploaded to this project (e.g. a page of my English book) – convert exactly those entries, do not add others',
+};
+
+const KID_KIND_TEXT: Record<ContentKind, string> = {
+  vocabulary: 'single words from typical German school English books for years 5–6 (type "word")',
+  phrases: 'short useful phrases (type "phrase")',
+  sentences: 'short, simple example sentences a pupil can say out loud (type "sentence")',
+  grammar: 'easy grammar patterns from years 5–6 (e.g. simple present, have got, can, plural) with a very short explanation in German (type "grammar")',
+  mistakes:
+    'corrections of mistakes made in our previous conversations or exercises in this project (type "correction", wrong version in "common_mistake", explanation in simple German)',
+  technical: '',
+  booklist:
+    'ALL entries of the vocabulary list, photo or file attached to this message or uploaded to this project (e.g. the word list of the current unit in the English book) – convert exactly those entries, do not add others',
 };
 
 const METHOD_TEXT: Record<PromptOptions['focusMethod'], string> = {
@@ -49,6 +80,7 @@ const METHOD_TEXT: Record<PromptOptions['focusMethod'], string> = {
 };
 
 export function buildPrompt(o: PromptOptions): string {
+  if (o.audience === 'kid') return buildKidPrompt(o);
   const topic = TOPIC_MODES.find((t) => t.id === o.topic);
   const topicLine = topic
     ? `Topic: ${topic.name} – ${topic.description}. Use "${topic.name}" as category.`
@@ -94,6 +126,60 @@ Put the complete JSON array into ONE single code block marked as json (\`\`\`jso
 Rules:
 - "english" and "german" are required; all other fields are optional – leave them out instead of guessing.
 - Alternatives must be correct in exactly this context (no loose synonyms).
+- Use straight double quotes and valid JSON (no comments, no trailing commas).
+- Do not split the array into several code blocks.`;
+}
+
+const KID_TOPICS = TOPIC_MODES.filter((t) => t.audience === 'kid');
+
+function buildKidPrompt(o: PromptOptions): string {
+  const topic = KID_TOPICS.find((t) => t.id === o.topic);
+  const topicLine = topic
+    ? `Topic: ${topic.name} – ${topic.description}. Use "${topic.name}" as category.`
+    : `Topic: mixed – choose from ${KID_TOPICS.map((t) => `"${t.name}"`).join(', ')}. Use exactly these names as category values.`;
+  const kinds = (o.kinds.length ? o.kinds : DEFAULT_KID_PROMPT_OPTIONS.kinds)
+    .filter((k) => k !== 'technical')
+    .map((k) => `- ${KID_KIND_TEXT[k]}`)
+    .join('\n');
+  const level = o.level === 'auto' ? 'school years 5–6 in Germany (about CEFR A1–A2)' : `CEFR level ${o.level} (school years 5–6 in Germany)`;
+  const count = Math.max(1, Math.min(200, Math.round(o.count)));
+
+  return `Please create English learning content for a pupil (school years 5–6 in Germany) for the Personal English Trainer app.
+
+Use ONLY information you can actually access in this project (our previous conversations, exercises, corrections, word lists and files in this project). Do not invent personal facts. If there is not enough context, choose typical vocabulary from German school English books for years 5–6 and mark it with "source": "general".
+
+What I need:
+- ${count} entries
+- ${topicLine}
+- Level: ${level}
+- Focus: ${METHOD_TEXT[o.focusMethod]}
+- Include:
+${kinds}
+- Prefer words and sentences that were difficult or wrong in our previous exercises.
+- Child-friendly content only. No names of real people, no addresses, no school names.
+- Explanations ("explanation") in short, simple German that an 11-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
+
+Output format – IMPORTANT:
+Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so it can be copied with the code block's copy button. Each entry:
+{
+  "english": "English word, phrase or short sentence",
+  "german": "German translation",
+  "type": "word | phrase | sentence | grammar | correction",
+  "category": "${KID_TOPICS.map((t) => t.name).join(' | ')}",
+  "level": "A1 | A2 | B1",
+  "example_en": "Short, simple English example sentence",
+  "example_de": "German translation of the example",
+  "alternatives_en": ["other correct English answers in THIS context only"],
+  "alternatives_de": ["other correct German translations in THIS context only"],
+  "common_mistake": "the wrong version (only for corrections)",
+  "explanation": "very short explanation in simple German (optional)",
+  "source": "chatgpt-project"
+}
+
+Rules:
+- "english" and "german" are required; leave out other fields instead of guessing.
+- For verbs write "to …" (e.g. "to read").
+- British English spelling (as in German school books); American spelling may go into "alternatives_en".
 - Use straight double quotes and valid JSON (no comments, no trailing commas).
 - Do not split the array into several code blocks.`;
 }

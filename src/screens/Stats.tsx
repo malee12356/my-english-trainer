@@ -4,10 +4,13 @@ import { activeDaySet, addDays, dailyStats, dayKey, formatMinutes, longestStreak
 import { summarize, weakItems } from '../domain/summary';
 import { navigate, useApp, useSnapshot } from '../state';
 import { BarChart, Empty, Segmented } from '../ui/components';
+import { BadgeGrid, LevelCard, useKidProgress } from './kids/KidParts';
 
 export function Stats() {
-  const { L, lang } = useApp();
+  const { L, lang, settings } = useApp();
   const snap = useSnapshot();
+  const kid = settings.profile === 'kid';
+  const kp = useKidProgress(snap);
   const [range, setRange] = useState<7 | 30 | 90>(7);
   const now = useMemo(() => new Date(), [snap]);
   const data = useMemo(() => {
@@ -65,7 +68,8 @@ export function Stats() {
   if (snap.logs.length === 0) {
     return (
       <main className="page">
-        <h1 className="large-title">{L('Statistik', 'Statistics')}</h1>
+        <h1 className="large-title">{kid ? L('Erfolge', 'Awards') : L('Statistik', 'Statistics')}</h1>
+        {kid && kp && <KidAwards kp={kp} />}
         <Empty emoji="📈" title={L('Noch keine Lerndaten', 'No learning data yet')} text={L('Nach deiner ersten Lerneinheit erscheinen hier Lernzeit, Erfolgsquoten und Fortschritt.', 'After your first session you will see study time, success rates and progress here.')}>
           <button className="btn block" onClick={() => navigate('/learn')}>{L('Jetzt lernen', 'Start learning')}</button>
         </Empty>
@@ -75,7 +79,9 @@ export function Stats() {
 
   return (
     <main className="page">
-      <h1 className="large-title">{L('Statistik', 'Statistics')}</h1>
+      <h1 className="large-title">{kid ? L('Erfolge', 'Awards') : L('Statistik', 'Statistics')}</h1>
+      {kid && kp && <KidAwards kp={kp} />}
+      {kid && <h2 className="section-title">{L('Statistik', 'Statistics')}</h2>}
       <Segmented label={L('Zeitraum', 'Range')} value={range} onChange={setRange} options={[{ value: 7, label: L('7 Tage', '7 days') }, { value: 30, label: L('30 Tage', '30 days') }, { value: 90, label: L('90 Tage', '90 days') }]} />
 
       <div className="grid-2 wide-4 mt">
@@ -184,5 +190,17 @@ export function Stats() {
         )}
       </p>
     </main>
+  );
+}
+
+function KidAwards({ kp }: { kp: NonNullable<ReturnType<typeof useKidProgress>> }) {
+  const { L } = useApp();
+  const earned = kp.stats;
+  return (
+    <div className="stack" style={{ marginBottom: 8 }}>
+      <LevelCard kp={kp} />
+      <h2 className="section-title">🏅 {L('Abzeichen', 'Badges')}</h2>
+      <BadgeGrid stats={earned} />
+    </div>
   );
 }

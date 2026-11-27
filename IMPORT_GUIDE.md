@@ -11,6 +11,14 @@
 
 Vor dem Import zeigt die App eine **Vorschau**: neue Einträge, Aktualisierungen (mit geänderten Feldern), unveränderte, Duplikate in der Datei und fehlerhafte Zeilen (mit Grund). Pro Zeile kann *Hinzufügen / Aktualisieren / Als neu anlegen / Überspringen* gewählt werden. Erst **„Import bestätigen“** schreibt Daten; *Abbrechen* verwirft alles.
 
+## Kopieren aus der ChatGPT-App (wichtig)
+
+ChatGPT gibt das JSON in einem **Codeblock** (dunkler Kasten) aus. Bitte den **Kopier-Knopf des Codeblocks** verwenden. Wird stattdessen die ganze Nachricht kopiert, fügt die ChatGPT-App Markdown-Zeichen ein (z. B. `\[` statt `[` oder `example\_en`). Die App repariert das beim Import automatisch und zeigt dann den Hinweis „automatisch repariert“. Ebenso entfernt sie umgebenden Text, wandelt typografische Anführungszeichen um und streicht abschließende Kommas.
+
+## Vokabelliste aus dem Schulbuch
+
+Im Prompt „Vokabelliste (Foto/Datei)“ wählen, in ChatGPT ein Foto der Wörterliste anhängen und den Prompt senden. ChatGPT wandelt genau diese Einträge in das Importformat um.
+
 ## Der ChatGPT-Prompt
 
 Einstellungen → **ChatGPT-Import** erzeugt einen Prompt mit:

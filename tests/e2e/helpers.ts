@@ -2,7 +2,15 @@ import { expect, type Page } from '@playwright/test';
 
 /** Start with an EMPTY app (skips the automatic default vocabulary). Call before page.goto. */
 export async function emptyApp(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('pet.skipStarter', '1'));
+  await page.addInitScript(() => {
+    localStorage.setItem('pet.skipStarter', '1');
+    localStorage.setItem('pet.profile', 'adult');
+  });
+}
+
+/** Preset the learner profile (skips the "who is learning?" question). Call before page.goto. */
+export async function presetProfile(page: Page, profile: 'adult' | 'kid') {
+  await page.addInitScript((p) => localStorage.setItem('pet.profile', p), profile);
 }
 
 export async function freshStart(page: Page) {
@@ -13,6 +21,7 @@ export async function freshStart(page: Page) {
 
 /** Normal first start: default vocabulary is loaded automatically. */
 export async function loadStarter(page: Page) {
+  await presetProfile(page, 'adult');
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Jetzt lernen' })).toBeVisible();
 }
@@ -27,7 +36,8 @@ export async function importPasted(page: Page, text: string) {
 /** Answer flashcards ("Gut") until the session summary appears. */
 export async function finishFlashcardSession(page: Page, max = 60) {
   const show = page.getByRole('button', { name: 'Lösung zeigen', exact: true });
-  const summary = page.getByText('Einheit abgeschlossen');
+  // adult summary text or the kids summary (stars)
+  const summary = page.getByText('Einheit abgeschlossen').or(page.getByRole('img', { name: /von 3 Sternen/ }));
   for (let i = 0; i < max; i++) {
     await expect(show.or(summary)).toBeVisible();
     if (await summary.isVisible()) return i;

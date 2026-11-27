@@ -179,6 +179,10 @@ export interface Settings {
   sttConsent?: 'granted' | 'denied';
   /** Starter content was loaded automatically on first start (never again, also not after deleting). */
   starterAutoLoaded?: boolean;
+  /** Learner profile: 'kid' = colourful, gamified, school vocabulary (years 5–6). */
+  profile?: 'adult' | 'kid';
+  /** The profile was chosen (first-start question answered or set automatically). */
+  profileChosen?: boolean;
   onboarded: boolean;
 }
 

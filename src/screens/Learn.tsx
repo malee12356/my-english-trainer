@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { indexProgress, planSession, weakness } from '../domain/planner';
 import { DURATIONS, METHODS } from '../domain/methods';
-import { TOPIC_MODES } from '../domain/topics';
+import { topicsFor } from '../domain/topics';
 import type { Method } from '../domain/types';
 import { navigate, useApp, useSnapshot } from '../state';
 import { Segmented } from '../ui/components';
@@ -10,6 +10,7 @@ import { detectSpeechCapabilities } from '../speech/capabilities';
 
 export function Learn() {
   const { L, lang, settings, updateSettings, route } = useApp();
+  const kid = settings.profile === 'kid';
   const snap = useSnapshot();
   const [topic, setTopic] = useState(route.query.get('topic') ?? 'all');
   const [method, setMethod] = useState<Method | 'auto'>((route.query.get('method') as Method) ?? 'auto');
@@ -68,9 +69,9 @@ export function Learn() {
       <h2 className="section-title">{L('Themenmodus', 'Topic mode')}</h2>
       <div className="grid-2">
         {topicCard('all', '🌍', L('Alle Themen', 'All topics'), `${counts.all} ${L('Einträge', 'items')}`)}
-        {TOPIC_MODES.map((t) => topicCard(t.id, t.emoji, lang === 'de' ? t.nameDe : t.name, `${counts[t.id] ?? 0} ${L('Einträge', 'items')}`))}
-        {topicCard('weakness', '🎯', 'Personal Weakness', counts.weakness ? `${counts.weakness} ${L('Schwachstellen', 'weak spots')}` : L('Noch keine Daten', 'No data yet'), counts.weakness === 0)}
-        {topicCard('driving', '🚗', 'Driving Mode', '', true, L('Phase 3 · in Vorbereitung', 'Phase 3 · planned'))}
+        {topicsFor(kid ? 'kid' : 'adult').map((t) => topicCard(t.id, t.emoji, lang === 'de' ? t.nameDe : t.name, `${counts[t.id] ?? 0} ${L('Einträge', 'items')}`))}
+        {topicCard('weakness', '🎯', kid ? L('Schwere Wörter üben', 'Practise hard words') : 'Personal Weakness', counts.weakness ? `${counts.weakness} ${L('Schwachstellen', 'weak spots')}` : L('Noch keine Daten', 'No data yet'), counts.weakness === 0)}
+        {!kid && topicCard('driving', '🚗', 'Driving Mode', '', true, L('Phase 3 · in Vorbereitung', 'Phase 3 · planned'))}
         {customCats.map((c) => topicCard(c.id, '🏷️', c.name, `${counts[c.id] ?? 0} ${L('Einträge', 'items')}`))}
       </div>
 
@@ -84,7 +85,7 @@ export function Learn() {
           </span>
           {method === 'auto' && <span className="badge accent">✓</span>}
         </button>
-        {METHODS.map((m) => {
+        {METHODS.filter((m) => !kid || m.status === 'ready').map((m) => {
           const sttMissing = m.needsStt && !stt.recognitionUsable;
           const unavailable = m.status !== 'ready' || (m.needsTts && !tts) || sttMissing;
           return (
