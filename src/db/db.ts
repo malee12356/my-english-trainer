@@ -7,6 +7,18 @@ import Dexie, { type Table } from 'dexie';
 import { itemKey } from '../domain/text';
 import type { Category, Collection, Item, Progress, ReviewLog, Settings, StudySession } from '../domain/types';
 
+/** Automatic restore point stored inside the app (see db/snapshots.ts). */
+export interface Snapshot {
+  id?: number;
+  createdAt: string;
+  reason: string;
+  appVersion: string;
+  items: number;
+  logs: number;
+  /** Full backup file as JSON string (same format as the manual backup). */
+  data: string;
+}
+
 export const DB_NAME = 'personal-english-trainer';
 
 export class TrainerDB extends Dexie {
@@ -17,6 +29,7 @@ export class TrainerDB extends Dexie {
   categories!: Table<Category, string>;
   collections!: Table<Collection, string>;
   settings!: Table<Settings, string>;
+  snapshots!: Table<Snapshot, number>;
 
   constructor(name = DB_NAME) {
     super(name);
@@ -53,10 +66,14 @@ export class TrainerDB extends Dexie {
             it.schemaVersion ??= 1;
           });
       });
+    // v3 – automatic local snapshots (restore points); existing data untouched
+    this.version(3).stores({
+      snapshots: '++id, createdAt',
+    });
   }
 }
 
-export const CURRENT_DB_VERSION = 2;
+export const CURRENT_DB_VERSION = 3;
 
 let instance: TrainerDB | null = null;
 export function db(): TrainerDB {

@@ -194,7 +194,8 @@ describe('database migration', () => {
 
     const upgraded = new TrainerDB(name);
     await upgraded.open();
-    expect(upgraded.verno).toBe(2);
+    expect(upgraded.verno).toBe(3);
+    expect(await upgraded.snapshots.count()).toBe(0);
     const it1 = await upgraded.items.get('old-1');
     expect(it1).toMatchObject({ key: 'consider', favorite: false, archived: false, alternatives_en: [], collections: [] });
     expect(await upgraded.items.where('key').equals('consider').count()).toBe(1);

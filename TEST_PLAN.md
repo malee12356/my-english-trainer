@@ -4,8 +4,8 @@
 
 | Ebene | Werkzeug | Befehl | Abdeckung |
 |---|---|---|---|
-| Unit/Integration | Vitest + fake-indexeddb | `npm test` | Import JSON/CSV, fehlerhafte Dateien, Duplikate, Updates, Alternativen je Richtung, Tippfehler/Satzzeichen, Re-Import mit Fortschrittserhalt, FSRS-Berechnung, Fälligkeit, Sitzungsschutz, Planer (Zeitbudget, neu/Tag, Themen, Schwächen), Statistiken (Serie, Tage, Methoden, Fehlerquote), Backup/Restore/Validierung, CSV-Formelschutz, DB-Migration v1→v2, Prompt-Generator |
-| End-to-End | Playwright (Chromium) | `npm run e2e` | iPhone-16-Emulation: Erststart, Navigation, kein horizontales Scrollen, Karteikarten-Sitzung + Persistenz nach Reload, Writing Mode, Themen-/Methodenwahl, Import (Einfügen, Datei, Abbrechen, Fehler), XSS-Schutz, Backup-Export + Restore in leere App, Prompt kopieren, **Offline** (Service Worker), Dark Mode (System + manuell), Touch-Ziele ≥ 44 px, englische UI, Fallback ohne Sprachausgabe; Desktop-Smoke-Test, Manifest/Icons |
+| Unit/Integration | Vitest + fake-indexeddb | `npm test` | Import JSON/CSV, fehlerhafte Dateien, Duplikate, Updates, Alternativen je Richtung, Tippfehler/Satzzeichen, Re-Import mit Fortschrittserhalt, FSRS-Berechnung, Fälligkeit, Sitzungsschutz, Planer (Zeitbudget, neu/Tag, Themen, Schwächen), Statistiken (Serie, Tage, Methoden, Fehlerquote), Backup/Restore/Validierung, CSV-Formelschutz, DB-Migration v1→v3, automatische Kopien (Anlegen, Begrenzung auf 10, Zurückholen mit Undo-Kopie, Kopie vor Löschen/Import), Prompt-Generator |
+| End-to-End | Playwright (Chromium) | `npm run e2e` | iPhone-16-Emulation: Erststart, Navigation, kein horizontales Scrollen, Karteikarten-Sitzung + Persistenz nach Reload, Writing Mode, Themen-/Methodenwahl, Import (Einfügen, Datei, Abbrechen, Fehler), XSS-Schutz, Backup-Export + Restore in leere App, Ein-Tipp-Backup nach der Sitzung, Auto-Kopie nach Löschen zurückholen, Prompt kopieren, **Offline** (Service Worker), Dark Mode (System + manuell), Touch-Ziele ≥ 44 px, englische UI, Fallback ohne Sprachausgabe; Desktop-Smoke-Test, Manifest/Icons |
 | Statisch | TypeScript strict | `npm run typecheck` | Typen |
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
@@ -65,6 +65,9 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] F1 Vollständiges Backup → „In Dateien sichern“ → Datei in iCloud Drive vorhanden
 - [ ] F2 Backup-Datei wählen → Vorschau (Anzahl Einträge/Antworten) → Wiederherstellen → Daten identisch
 - [ ] F3 „Letztes Backup“ wird angezeigt; Erinnerung erscheint nach Ablauf der eingestellten Tage
+- [ ] F4 Nach einer Lerneinheit „💾 Fortschritt sichern → Sichern“ → „In Dateien sichern“ → danach „Heute schon gesichert“
+- [ ] F5 Backup → „Automatische Kopien“ zeigt „Nach einer Lerneinheit“; Eintrag löschen → Kopie „Vor dem Löschen von Einträgen“ → „Zurückholen“ → Eintrag wieder da
+- [ ] F6 Mit aktiver Eltern-PIN zeigen die Kopien ein Schloss statt „Zurückholen“
 
 ### G. Update ohne Datenverlust
 - [ ] G1 Nach einem neuen Deployment App öffnen → Banner „Neue Version verfügbar“ → Aktualisieren

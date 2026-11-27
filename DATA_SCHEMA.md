@@ -1,6 +1,6 @@
 # Datenschema
 
-Versionen: **Import-Schema v1**, **Backup-Format v1**, **IndexedDB-Schema v2**.
+Versionen: **Import-Schema v1**, **Backup-Format v1**, **IndexedDB-Schema v3**.
 
 ## 1. Importformat (JSON)
 
@@ -50,7 +50,7 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (Erwachsene: `everyday`, 
 - Status je Zeile: `new`, `update` (geänderte Felder werden gelistet), `unchanged`, `duplicate` (mehrfach in derselben Datei), `invalid`.
 - Update-Regeln: übergebene Einzelfelder überschreiben; Listen (Alternativen, Tags, Kategorien, Beispiele) werden **vereinigt**; Favorit/Archiv/Sammlungen und **Lernfortschritt bleiben erhalten**.
 
-## 2. Interne Datenbank (IndexedDB `personal-english-trainer`, Version 2)
+## 2. Interne Datenbank (IndexedDB `personal-english-trainer`, Version 3)
 
 | Store | Schlüssel | Inhalt |
 |---|---|---|
@@ -61,6 +61,7 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (Erwachsene: `everyday`, 
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
 | `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`, `kidGrade` = `5-6`/`7-8`/`9-10`, `challengeWords`, `minutesPerWord`, `parentLock` = `{ v: 1, hash }` (PBKDF2-SHA-256 der Eltern-PIN)) |
+| `snapshots` | auto (`++id`), Index `createdAt` | Automatische Kopien: `createdAt`, `reason` (Anlass, z. B. „Nach einer Lerneinheit“, „Vor dem Import“), `appVersion`, `items`, `logs` (Anzahl), `data` (vollständiges Backup-JSON wie in Abschnitt 3). Max. 10, älteste werden gelöscht. Nicht Teil des Backups; Restore lässt sie unverändert. |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 
@@ -77,6 +78,7 @@ Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `
 |---|---|
 | 1 | Erstes Schema |
 | 2 | Index `key`, `externalId`, `*collections`, `[skill+due]`; Upgrade füllt `key`, `favorite`, `archived`, `collections`, leere Listen |
+| 3 | Neuer Store `snapshots` (automatische Kopien); keine Datenänderung |
 
 ## 3. Backup-Format (v1)
 

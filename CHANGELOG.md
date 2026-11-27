@@ -2,6 +2,17 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.9.0] – 2026-11-27
+
+### Hinzugefügt – Automatische Kopien und Ein-Tipp-Backup
+- **Automatische Kopien in der App:** nach jeder Lerneinheit (auch Challenge und Hausaufgabe) und **vor** jeder riskanten Aktion (Import, Löschen von Einträgen, Entfernen von Standardvokabeln, Einrichtungscode, Wiederherstellen eines Backups). Die letzten 10 bleiben erhalten.
+- **Backup → „Automatische Kopien“:** Liste mit Datum, Anlass und Anzahl; **„Zurückholen“** mit Bestätigung. Der aktuelle Stand wird vorher selbst als Kopie gesichert, das Zurückholen lässt sich also rückgängig machen. Bei aktiver Eltern-PIN gesperrt.
+- **Ein-Tipp-Backup nach jeder Einheit:** In allen Zusammenfassungen (Erwachsene, Schüler, Spielzeit-Challenge) steht „💾 Fortschritt sichern → Sichern“ (iPhone: „In Dateien sichern“, z. B. iCloud Drive) mit Anzeige des letzten Backups.
+- Hinweis: Die automatischen Kopien liegen in der App. Wird die App vom Home-Bildschirm gelöscht, sind auch sie weg. Davor schützt nur das Backup in Dateien. Ein vollautomatisches Speichern in Dateien ohne Tipp erlaubt iOS Web-Apps nicht.
+
+### Technisch
+- IndexedDB-Schema **v3**: neuer Store `snapshots` (`++id, createdAt`). Bestehende Daten bleiben unverändert.
+
 ## [0.8.0] – 2026-11-27
 
 ### Hinzugefügt – Units und Seiten aus dem Schulbuch

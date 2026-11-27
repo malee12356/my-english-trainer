@@ -3,6 +3,7 @@ import { loadSnapshot, type Snapshot } from '../../db/repo';
 import { BADGES, sessionStars } from '../../domain/gamification';
 import { useApp } from '../../state';
 import { RobotSays } from '../../ui/Robot';
+import { BackupNudge } from '../../ui/BackupNudge';
 import { BadgeGrid, Confetti, LevelCard, useKidProgress } from './KidParts';
 
 /** End-of-session celebration for kids: stars, XP, level-up, new badges. */
@@ -61,6 +62,7 @@ export function KidSummary({ before, answered, correct, xpGained, onDone }: { be
           <p className="tiny muted" style={{ margin: 0 }}>{newBadges.map((id) => BADGES.find((b) => b.id === id)).map((b) => (lang === 'de' ? b?.de : b?.en)).join(', ')}</p>
         </section>
       )}
+      <BackupNudge />
       <button className="btn block big" onClick={onDone}>{L('Fertig', 'Done')}</button>
       <a className="btn block secondary" href="#/learn">{L('Noch eine Runde', 'One more round')}</a>
     </div>

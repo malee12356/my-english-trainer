@@ -1,8 +1,10 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createBackup, itemsToCsv, itemsToImportJson, markBackupDone, restoreBackup, validateBackup, type BackupCheck } from '../db/backup';
 import { getSettings, loadSnapshot } from '../db/repo';
 import { useApp } from '../state';
 import { NavBar, useConfirm } from '../ui/components';
+import { createSnapshot, listSnapshots, restoreSnapshot } from '../db/snapshots';
+import type { Snapshot } from '../db/db';
 import { dateStamp, readFileAsText, saveFile } from '../ui/files';
 import { IconDownload, IconUpload } from '../ui/icons';
 import { PinUnlockSheet } from './parent/ParentUI';
@@ -14,6 +16,32 @@ export function BackupScreen() {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { confirm, dialog } = useConfirm();
+  const [copies, setCopies] = useState<Omit<Snapshot, 'data'>[] | null>(null);
+  const reloadCopies = () => listSnapshots().then(setCopies, () => setCopies([]));
+  useEffect(() => {
+    void reloadCopies();
+  }, []);
+
+  const restoreCopy = async (c: Omit<Snapshot, 'data'>) => {
+    const when = new Date(c.createdAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+    const ok = await confirm(
+      L('Auto-Kopie zurückholen?', 'Restore automatic copy?'),
+      L(`Der Stand vom ${when} (${c.reason}) ersetzt alle aktuellen Daten. Der jetzige Stand wird vorher selbst als Kopie gesichert.`, `The state from ${when} (${c.reason}) replaces all current data. The current state is saved as a copy first.`),
+      { danger: true, ok: L('Zurückholen', 'Restore') },
+    );
+    if (!ok || c.id == null) return;
+    setBusy(true);
+    try {
+      await restoreSnapshot(c.id);
+      await updateSettings(await getSettings());
+      bump();
+      toast(L('Stand zurückgeholt ✓', 'State restored ✓'));
+    } catch (e) {
+      toast(L(`Zurückholen fehlgeschlagen: ${(e as Error).message}`, `Restore failed: ${(e as Error).message}`));
+    }
+    setBusy(false);
+    void reloadCopies();
+  };
 
   const exportFull = async () => {
     setBusy(true);
@@ -51,11 +79,13 @@ export function BackupScreen() {
     );
     if (!ok) return;
     setBusy(true);
+    await createSnapshot('Vor dem Wiederherstellen eines Backups');
     await restoreBackup(check.backup);
     await updateSettings(await getSettings());
     setBusy(false);
     setCheck(null);
     bump();
+    void reloadCopies();
     toast(L('Backup wiederhergestellt ✓', 'Backup restored ✓'));
   };
 
@@ -108,6 +138,32 @@ export function BackupScreen() {
         )}
       </div>
       )}
+
+      <h2 className="section-title">{L('Automatische Kopien', 'Automatic copies')}</h2>
+      <div className="card stack" aria-label={L('Automatische Kopien', 'Automatic copies')}>
+        <p className="tiny muted" style={{ margin: 0 }}>
+          {L('Die App legt nach jeder Lerneinheit und vor riskanten Aktionen (Import, Löschen, Wiederherstellen, Einrichtungscode) automatisch eine Kopie an. Die letzten 10 bleiben erhalten. Sie liegen auf diesem Gerät in der App – wird die App gelöscht, sind sie auch weg. Darum zusätzlich ab und zu ein Backup in Dateien sichern.', 'After every study session and before risky actions (import, delete, restore, setup code) the app saves a copy automatically. The last 10 are kept. They live inside the app on this device – if the app is deleted they are gone too, so also save a backup to Files now and then.')}
+        </p>
+        {copies === null ? null : copies.length === 0 ? (
+          <span className="small muted">{L('Noch keine automatische Kopie.', 'No automatic copy yet.')}</span>
+        ) : (
+          <ul className="list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {copies.map((c) => (
+              <li key={c.id} className="row" style={{ alignItems: 'center', gap: 8, padding: '8px 0', borderTop: '1px solid var(--line, rgba(0,0,0,.08))' }} data-testid="snapshot">
+                <span className="grow small">
+                  <strong style={{ display: 'block' }}>{new Date(c.createdAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}</strong>
+                  <span className="muted">{c.reason} · {c.items} {L('Einträge', 'items')}, {c.logs} {L('Antworten', 'answers')}</span>
+                </span>
+                {parentLocked ? (
+                  <span className="tiny muted" aria-label={L('Durch Eltern-PIN geschützt', 'Protected by parent PIN')}>🔒</span>
+                ) : (
+                  <button className="btn small secondary" onClick={() => restoreCopy(c)} disabled={busy}>{L('Zurückholen', 'Restore')}</button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       {dialog}
     </main>
   );
