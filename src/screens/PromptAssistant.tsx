@@ -38,8 +38,8 @@ export function PromptAssistant() {
       <ol className="small muted" style={{ paddingLeft: 20, margin: '4px 0 16px' }}>
         <li>{L('Prompt unten konfigurieren und kopieren.', 'Configure and copy the prompt below.')}</li>
         <li>{L('In deinem English-Projekt in ChatGPT einfügen.', 'Paste it into your English project in ChatGPT.')}</li>
-        <li>{L('Antwort (JSON) kopieren oder als .json in der Dateien-App sichern.', 'Copy the JSON answer or save it as .json in the Files app.')}</li>
-        <li>{L('Hier importieren – mit Vorschau und Bestätigung.', 'Import here – with preview and confirmation.')}</li>
+        <li>{L('In der Antwort beim Codeblock (dunkler Kasten) oben rechts auf „Kopieren“ tippen – nicht die ganze Nachricht kopieren.', 'In the answer, tap “Copy” at the top right of the code block – do not copy the whole message.')}</li>
+        <li>{L('Hier „Zum Import“ → „Einfügen“ → „Aus Zwischenablage einfügen“ → Vorschau prüfen → bestätigen.', 'Here: “To import” → “Paste” → “Paste from clipboard” → check preview → confirm.')}</li>
       </ol>
 
       <div className="card stack">

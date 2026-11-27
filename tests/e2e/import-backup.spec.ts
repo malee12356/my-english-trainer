@@ -101,3 +101,13 @@ test('ChatGPT prompt can be configured and copied', async ({ page, context }) =>
   await page.getByRole('button', { name: 'Prompt kopieren' }).click();
   await expect(page.getByText(/Prompt kopiert|Kopieren nicht möglich/)).toBeVisible();
 });
+
+test('ChatGPT message copied as a whole (Markdown escapes) is repaired and imported', async ({ page }) => {
+  await page.goto('/');
+  const pasted = '\\[ { "english": "I can\'t really judge him because I\'m no better myself.", "german": "Ich kann ihn eigentlich nicht verurteilen, weil ich selbst nicht besser bin.", "type": "correction", "category": "Everyday English", "level": "B1", "example\\_en": "I can\'t really judge others because I\'m no better myself.", "example\\_de": "Ich kann andere nicht verurteilen." } \\]';
+  await importPasted(page, pasted);
+  await expect(page.getByText('1 neu')).toBeVisible();
+  await expect(page.getByText(/automatisch repariert/)).toBeVisible();
+  await page.getByRole('button', { name: 'Import bestätigen (1)' }).click();
+  await expect(page.getByText("I can't really judge him because I'm no better myself.")).toBeVisible();
+});

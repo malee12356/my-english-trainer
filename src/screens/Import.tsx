@@ -38,7 +38,7 @@ export function ImportScreen() {
       return;
     }
     if (parsed.rows.length === 0) {
-      setError(L('Keine Einträge gefunden. Erwartet wird ein JSON-Array oder eine CSV mit Kopfzeile (english, german, …).', 'No entries found. Expected a JSON array or CSV with header (english, german, …).'));
+      setError(L('Keine Einträge gefunden. Erwartet wird ein JSON-Array oder eine CSV mit Kopfzeile (english, german, …). Tipp: In ChatGPT den Kopier-Knopf des Codeblocks verwenden.', 'No entries found. Expected a JSON array or CSV with header (english, german, …). Tip: use the copy button of the code block in ChatGPT.'));
       return;
     }
     const snap = await loadSnapshot();
@@ -132,6 +132,11 @@ export function ImportScreen() {
             </div>
             {plan.newCategories.length > 0 && (
               <p className="small" style={{ marginBottom: 0 }}>{L('Neue Kategorien werden angelegt:', 'New categories will be created:')} {plan.newCategories.map((c) => c.name).join(', ')}</p>
+            )}
+            {plan.repairs && plan.repairs.length > 0 && (
+              <p className="small" style={{ marginBottom: 0, color: 'var(--orange)' }}>
+                {L('Der eingefügte Text wurde automatisch repariert (z. B. Zeichen aus dem Kopieren der ganzen ChatGPT-Nachricht). Bitte Vorschau kurz prüfen.', 'The pasted text was repaired automatically (e.g. characters from copying the whole ChatGPT message). Please check the preview.')}
+              </p>
             )}
             <p className="tiny muted" style={{ marginBottom: 0 }}>{L('Lernfortschritt bestehender Einträge bleibt in jedem Fall erhalten.', 'Learning progress of existing items is always kept.')}</p>
           </div>

@@ -73,7 +73,7 @@ ${kinds}
 - Do not include confidential company information, names of real colleagues, customers or children.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
 
 Output format – IMPORTANT:
-Return ONLY a JSON array (no explanation before or after), so I can save it as a .json file or paste it directly. Each entry:
+Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so I can copy it with the code block's copy button. Each entry:
 {
   "english": "English word, phrase or sentence",
   "german": "German translation",
@@ -94,5 +94,6 @@ Return ONLY a JSON array (no explanation before or after), so I can save it as a
 Rules:
 - "english" and "german" are required; all other fields are optional – leave them out instead of guessing.
 - Alternatives must be correct in exactly this context (no loose synonyms).
-- Use straight double quotes and valid JSON (no comments, no trailing commas).`;
+- Use straight double quotes and valid JSON (no comments, no trailing commas).
+- Do not split the array into several code blocks.`;
 }
