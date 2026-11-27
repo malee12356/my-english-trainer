@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { finishFlashcardSession, importPasted } from './helpers';
+import { emptyApp } from './helpers';
+
+test.beforeEach(async ({ page }) => emptyApp(page));
 
 const SPEC = JSON.stringify([
   { english: 'to take into account', german: 'berücksichtigen', example_en: 'We need to take this into account.', example_de: 'Wir müssen das berücksichtigen.', alternatives: ['to consider'], ipa: '/tə teɪk ˈɪntuː əˈkaʊnt/', category: 'Meeting Mode', level: 'B2' },

@@ -45,7 +45,7 @@ export function SettingsScreen() {
         <ListLink to="/import" icon="📥" title={L('Datei / Text importieren', 'Import file / text')} subtitle="JSON · CSV" />
         <ListLink to="/item/new" icon="✍️" title={L('Manuell hinzufügen', 'Add manually')} />
         <ListLink to="/backup" icon="💾" title={L('Backup & Wiederherstellung', 'Backup & restore')} subtitle={settings.lastBackupAt ? `${L('Letztes Backup', 'Last backup')}: ${new Date(settings.lastBackupAt).toLocaleDateString()}` : L('Noch kein Backup', 'No backup yet')} />
-        <ListLink onClick={async () => { const r = await loadStarterContent(); bump(); toast(L(`${r.added} neue Starter-Einträge`, `${r.added} new starter items`)); }} icon="🌱" title={L('Starter-Inhalte laden', 'Load starter content')} subtitle={L('Allgemeine Beispiele für alle Themenmodi', 'Generic examples for all topic modes')} />
+        <ListLink onClick={async () => { const r = await loadStarterContent(); bump(); toast(L(`${r.added} neue Starter-Einträge`, `${r.added} new starter items`)); }} icon="🌱" title={L('Standardvokabeln laden', 'Load default vocabulary')} subtitle={L('≈ 160 allgemeine Einträge für alle Themenmodi – nur fehlende werden ergänzt', '≈ 160 generic items for all topic modes – only missing ones are added')} />
       </div>
 
       <h2 className="section-title">{L('Lernen', 'Learning')}</h2>

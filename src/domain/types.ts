@@ -177,6 +177,8 @@ export interface Settings {
    * Google) may process the audio on its servers. undefined = not asked yet.
    */
   sttConsent?: 'granted' | 'denied';
+  /** Starter content was loaded automatically on first start (never again, also not after deleting). */
+  starterAutoLoaded?: boolean;
   onboarded: boolean;
 }
 

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { ensureSetup } from './db/repo';
+import { autoLoadStarterOnFirstStart, ensureSetup } from './db/repo';
 import { useApp } from './state';
 import { IconCards, IconChart, IconGear, IconHome, IconLearn } from './ui/icons';
 import { Home } from './screens/Home';
@@ -70,6 +70,7 @@ export function App() {
 
   useEffect(() => {
     ensureSetup()
+      .then(() => autoLoadStarterOnFirstStart())
       .then(() => setReady(true))
       .catch((e: Error) => setError(e.message || String(e)));
   }, []);

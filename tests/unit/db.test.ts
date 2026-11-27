@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TrainerDB, setDbForTests } from '../../src/db/db';
 import { createBackup, itemsToCsv, itemsToImportJson, restoreBackup, validateBackup } from '../../src/db/backup';
-import { addItem, applyImport, deleteItems, ensureSetup, getSettings, loadSnapshot, recordAnswer, saveSettings, startSession } from '../../src/db/repo';
+import { addItem, applyImport, autoLoadStarterOnFirstStart, deleteItems, ensureSetup, getSettings, loadSnapshot, recordAnswer, saveSettings, startSession } from '../../src/db/repo';
 import { parseImport, planImport } from '../../src/domain/importer';
 import { deterministicEngine, setEngineForTests } from '../../src/domain/scheduler';
 import { STARTER_CONTENT } from '../../src/data/starter';
@@ -98,6 +98,27 @@ describe('database & import integration', () => {
     expect(snap.logs.map((l) => l.isNew)).toEqual([true, undefined]);
     expect(snap.sessions[0]).toMatchObject({ answered: 2, correct: 1 });
     expect(snap.settings.lastMode).toMatchObject({ topic: 'engineering', method: 'flashcards' });
+  });
+});
+
+describe('default vocabulary on first start', () => {
+  it('loads once into an empty app and never again, also not after deleting', async () => {
+    const added = await autoLoadStarterOnFirstStart();
+    expect(added).toBe(STARTER_CONTENT.length);
+    expect(added).toBeGreaterThanOrEqual(150);
+    const snap = await loadSnapshot();
+    expect(snap.items.every((i) => i.origin === 'starter')).toBe(true);
+    expect(await autoLoadStarterOnFirstStart()).toBe(0);
+    await deleteItems(snap.items.map((i) => i.id));
+    expect(await autoLoadStarterOnFirstStart()).toBe(0);
+    expect((await loadSnapshot()).items).toHaveLength(0);
+  });
+
+  it('does not add anything when the user already has content', async () => {
+    await addItem({ english: 'strain', german: 'Dehnung' });
+    expect(await autoLoadStarterOnFirstStart()).toBe(0);
+    expect((await loadSnapshot()).items).toHaveLength(1);
+    expect((await getSettings()).starterAutoLoaded).toBe(true);
   });
 });
 

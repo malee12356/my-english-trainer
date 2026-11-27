@@ -3,6 +3,8 @@
  * user taps "Starter-Inhalte laden". Uses the public import format, so it goes
  * through exactly the same validation/duplicate pipeline as a ChatGPT import.
  */
+import { BUSINESS_EXTRA, ENGINEERING_EXTRA, EVERYDAY_EXTRA, HANDBALL_EXTRA, MEETING_EXTRA } from './starterExtra';
+
 type Raw = Record<string, unknown>;
 
 const everyday: Raw[] = [
@@ -86,9 +88,9 @@ const handball: Raw[] = [
 const withCat = (rows: Raw[], category: string) => rows.map((r) => ({ ...r, category, source: 'starter' }));
 
 export const STARTER_CONTENT: Raw[] = [
-  ...withCat(everyday, 'Everyday English'),
-  ...withCat(business, 'Business English'),
-  ...withCat(engineering, 'Engineering Mode'),
-  ...withCat(meeting, 'Meeting Mode'),
-  ...withCat(handball, 'Handball Mode'),
+  ...withCat([...everyday, ...EVERYDAY_EXTRA], 'Everyday English'),
+  ...withCat([...business, ...BUSINESS_EXTRA], 'Business English'),
+  ...withCat([...engineering, ...ENGINEERING_EXTRA], 'Engineering Mode'),
+  ...withCat([...meeting, ...MEETING_EXTRA], 'Meeting Mode'),
+  ...withCat([...handball, ...HANDBALL_EXTRA], 'Handball Mode'),
 ];

@@ -1,13 +1,19 @@
 import { expect, type Page } from '@playwright/test';
 
-export async function freshStart(page: Page) {
-  await page.goto('/');
-  await expect(page.getByRole('button', { name: /Starter-Inhalte laden/ })).toBeVisible();
+/** Start with an EMPTY app (skips the automatic default vocabulary). Call before page.goto. */
+export async function emptyApp(page: Page) {
+  await page.addInitScript(() => localStorage.setItem('pet.skipStarter', '1'));
 }
 
+export async function freshStart(page: Page) {
+  await emptyApp(page);
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: /Standardvokabeln laden/ })).toBeVisible();
+}
+
+/** Normal first start: default vocabulary is loaded automatically. */
 export async function loadStarter(page: Page) {
-  await freshStart(page);
-  await page.getByRole('button', { name: /Starter-Inhalte laden/ }).click();
+  await page.goto('/');
   await expect(page.getByRole('button', { name: 'Jetzt lernen' })).toBeVisible();
 }
 

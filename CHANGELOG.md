@@ -2,6 +2,15 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.3.0] – 2026-11-27
+
+### Hinzugefügt
+- **Standardvokabeln fest hinterlegt:** 163 allgemeine Einträge (Wörter, Wendungen, Sätze, typische Fehler) über alle fünf Themenmodi.
+- Beim **ersten Start** einer leeren App werden sie automatisch geladen, genau einmal. Gelöschte Standardvokabeln kommen nicht ungefragt zurück. Über Einstellungen → „Standardvokabeln laden“ lassen sich fehlende jederzeit ergänzen, ohne eigene Inhalte oder Fortschritt zu verändern.
+
+### Hinweis
+- Safari und die installierte Home-Bildschirm-App haben auf dem iPhone **getrennte Speicher**. Inhalte und Fortschritt aus Safari erscheinen nicht in der App und umgekehrt (Übertragung per Backup).
+
 ## [0.2.2] – 2026-11-26
 
 ### Behoben

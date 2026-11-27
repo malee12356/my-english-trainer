@@ -276,6 +276,25 @@ export async function requestPersistentStorage(): Promise<boolean | null> {
 
 /* ----------------------------------------------------------------- starter */
 
+/**
+ * First start: load the built-in starter content once into an empty app.
+ * Never runs again (flag), so deleted starter items do not come back.
+ * Test/dev escape hatch: localStorage "pet.skipStarter" = "1".
+ */
+export async function autoLoadStarterOnFirstStart(): Promise<number> {
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('pet.skipStarter') === '1') return 0;
+  } catch {
+    /* storage blocked – ignore */
+  }
+  const s = await getSettings();
+  if (s.starterAutoLoaded) return 0;
+  const count = await db().items.count();
+  await saveSettings({ starterAutoLoaded: true });
+  if (count > 0) return 0;
+  return (await loadStarterContent()).added;
+}
+
 export async function loadStarterContent(): Promise<ImportResult> {
   const { STARTER_CONTENT } = await import('../data/starter');
   const snap = await loadSnapshot();

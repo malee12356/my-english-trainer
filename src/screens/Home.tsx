@@ -31,7 +31,7 @@ export function Home() {
     await requestPersistentStorage();
     setBusy(false);
     bump();
-    toast(L(`${r.added} Starter-Einträge geladen`, `${r.added} starter items loaded`));
+    toast(L(`${r.added} Standardvokabeln geladen`, `${r.added} default items loaded`));
   };
 
   // Recommendation
@@ -82,7 +82,7 @@ export function Home() {
           <Empty emoji="📚" title={L('Noch keine Lerninhalte', 'No learning content yet')} text={L('Importiere Inhalte aus deinem ChatGPT-Projekt oder starte mit allgemeinen Starter-Inhalten.', 'Import content from your ChatGPT project or start with generic starter content.')}>
             <div className="stack">
               <button className="btn block" onClick={loadStarter} disabled={busy}>
-                {L('Starter-Inhalte laden (≈ 60)', 'Load starter content (≈ 60)')}
+                {L('Standardvokabeln laden (≈ 160)', 'Load default vocabulary (≈ 160)')}
               </button>
               <a className="btn block secondary" href="#/prompt">{L('ChatGPT-Import einrichten', 'Set up ChatGPT import')}</a>
               <a className="btn block secondary" href="#/import">{L('Datei importieren', 'Import file')}</a>

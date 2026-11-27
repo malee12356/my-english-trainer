@@ -57,7 +57,7 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (`everyday`, `business`, 
 | `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct` |
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
-| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung) |
+| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen) |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 

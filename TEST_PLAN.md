@@ -10,7 +10,9 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-26, v0.2.2):** Typecheck ✅ · 92/92 Unit-/Integrationstests ✅ · 31/31 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.3.0):** Typecheck ✅ · 94/94 Unit-/Integrationstests ✅ · 33/33 E2E-Tests ✅ · Build ✅.
+
+E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
 Speaking Mode automatisiert: Auswertung (Kurzformen, Zahlen, Alternativen, Versuche), Erkennungs-Wrapper mit simulierter Engine (Fehlercodes, Start-Timeout, Abbruch), Planer (nur bei verfügbarer Erkennung, nie automatisch); E2E mit simulierter Erkennung: Einwilligung vor erstem Mikrofonzugriff, richtige/falsche Antwort mit zweitem Versuch, Ablehnen → Schreiben, Berechtigungsfehler → Schreiben, deaktiviert ohne API bzw. offline.
 
@@ -28,6 +30,7 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] A2 Teilen → „Zum Home-Bildschirm“ → Icon erscheint mit eigenem Symbol und Namen „English“
 - [ ] A3 Start über Icon: Vollbild ohne Safari-Leisten, Statusleiste lesbar, nichts unter Notch/Dynamic Island oder Home-Indikator verdeckt
 - [ ] A4 Hoch- und Querformat: kein horizontales Scrollen, keine abgeschnittenen Dialoge
+- [ ] A5 Erster Start der installierten App: ~160 Standardvokabeln sind ohne Import vorhanden (Vokabeln → Anzahl)
 
 ### B. Import
 - [ ] B1 Prompt kopieren → in ChatGPT einfügen → JSON-Antwort kopieren → „Aus Zwischenablage einfügen“ → Vorschau korrekt

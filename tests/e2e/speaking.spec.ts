@@ -1,5 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { importPasted } from './helpers';
+import { emptyApp } from './helpers';
+
+test.beforeEach(async ({ page }) => emptyApp(page));
 
 /**
  * Speech recognition is simulated: the fake engine returns the next queued
@@ -101,7 +104,7 @@ test('declining consent or recognition errors fall back to typing', async ({ pag
 
 test('speaking is disabled without recognition API or when offline', async ({ page, context }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Starter-Inhalte laden/ }).click();
+  await page.getByRole('button', { name: /Standardvokabeln laden/ }).click();
   await page.goto('/#/learn');
   // Chromium in tests has no recognition API
   const hasApi = await page.evaluate(() => 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
