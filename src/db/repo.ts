@@ -38,10 +38,18 @@ export async function getSettings(): Promise<Settings> {
   return { ...DEFAULT_SETTINGS, ...(s ?? {}) };
 }
 
+/**
+ * Read-modify-write in ONE transaction, so quick successive changes (e.g. grade
+ * and then minutes) cannot overwrite each other with a stale copy.
+ */
 export async function saveSettings(patch: Partial<Settings>): Promise<Settings> {
-  const next = { ...(await getSettings()), ...patch, id: 'settings' as const };
-  await db().settings.put(next);
-  return next;
+  const d = db();
+  return d.transaction('rw', d.settings, async () => {
+    const cur = await d.settings.get('settings');
+    const next = { ...DEFAULT_SETTINGS, ...(cur ?? {}), ...patch, id: 'settings' as const };
+    await d.settings.put(next);
+    return next;
+  });
 }
 
 /* ------------------------------------------------------------------- items */

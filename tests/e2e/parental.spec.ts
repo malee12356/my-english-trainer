@@ -98,3 +98,34 @@ test('new rules with the same PIN are accepted without PIN; a different PIN need
   await expect(kid.getByLabel('Minuten pro richtigem Wort')).toHaveValue('0.5');
   await kidCtx.close();
 });
+
+test('setup made in the pupil profile on this phone can be sent via WhatsApp directly', async ({ page, browser }) => {
+  await presetProfile(page, 'kid');
+  await page.goto('/#/settings');
+  await page.getByRole('group', { name: 'Klassenstufe' }).getByRole('button', { name: 'Klasse 7–8' }).click();
+  await page.getByLabel('Minuten pro richtigem Wort').selectOption('2');
+  await page.getByRole('button', { name: /Eltern-PIN festlegen/ }).click();
+  const pin = page.getByRole('dialog', { name: 'Eltern-PIN festlegen' });
+  await pin.getByLabel('Neue PIN (4–8 Ziffern)').fill('2468');
+  await pin.getByLabel('PIN wiederholen').fill('2468');
+  await pin.getByRole('button', { name: 'PIN speichern' }).click();
+  // still unlocked right after setting the PIN → send button visible
+  await page.getByRole('button', { name: /Diese Einrichtung per WhatsApp senden/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Einrichtung per WhatsApp senden' });
+  const wa = sheet.getByRole('link', { name: /Per WhatsApp senden/ });
+  await expect(wa).toBeInViewport();
+  await expect(wa).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=.*PET1-/);
+  const msg = await sheet.getByLabel('Einrichtungs-Nachricht').innerText();
+  expect(msg).not.toContain('2468');
+
+  const kidCtx = await browser.newContext();
+  const kid = await kidCtx.newPage();
+  await kid.goto('/');
+  await kid.getByRole('button', { name: /Einrichtungscode von den Eltern einfügen/ }).click();
+  await pasteCode(kid, msg);
+  await kid.getByRole('dialog', { name: 'Einrichtungscode einfügen' }).getByRole('button', { name: 'Einrichtung übernehmen' }).click();
+  await expect(kid.getByRole('button', { name: "🚀 Los geht's!" })).toBeVisible();
+  await kid.goto('/#/settings');
+  await expect(kid.getByText(/Klasse 7–8 · 20 Wörter · 2 Min\. pro Wort/)).toBeVisible();
+  await kidCtx.close();
+});

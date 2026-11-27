@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.7.0):** Typecheck ✅ · 131/131 Unit-/Integrationstests ✅ · 46/46 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.7.1):** Typecheck ✅ · 132/132 Unit-/Integrationstests ✅ · 47/47 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -106,6 +106,7 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] M3 Einstellungen zeigen „Von den Eltern eingestellt“; Profilwechsel und Backup-Wiederherstellung sind gesperrt
 - [ ] M4 Falsche PIN → Meldung; richtige PIN entsperrt; „Jetzt sperren“
 - [ ] M5 Neue Regeln (z. B. 2 Min/Wort) mit derselben PIN schicken → werden ohne PIN übernommen
+- [ ] M6 Schülerprofil + PIN direkt in den Einstellungen eingerichtet → „Diese Einrichtung per WhatsApp senden“ ist sichtbar
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

@@ -2,6 +2,14 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.7.1] – 2026-11-27
+
+### Behoben
+- „Per WhatsApp senden“ fehlte, wenn Schülerprofil, Klasse und PIN **direkt in den Einstellungen** eingerichtet wurden; der Assistent war nur im Erwachsenenprofil sichtbar. Jetzt gibt es dort **„Diese Einrichtung per WhatsApp senden“** (verschickt Klasse, Regeln und die vorhandene PIN), und der Assistent ist in beiden Profilen erreichbar.
+- Nach dem Festlegen der PIN bleibt der Elternbereich 5 Minuten offen, statt sich sofort zu sperren.
+- „Per WhatsApp senden“ steht jetzt groß **über** dem Nachrichtentext und ist ohne Scrollen sichtbar.
+- Schnell nacheinander geänderte Einstellungen (z. B. Klasse, dann Minuten) konnten sich gegenseitig überschreiben. Das Speichern läuft jetzt atomar in einer Transaktion.
+
 ## [0.7.0] – 2026-11-27
 
 ### Hinzugefügt – Eltern-PIN und Einrichtung per Nachricht

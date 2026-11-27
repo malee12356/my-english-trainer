@@ -42,6 +42,8 @@ interface AppCtx {
   /** Try to unlock the parent area for 5 minutes. 'wait' = too many wrong attempts. */
   unlockParent: (pin: string) => Promise<'ok' | 'wrong' | 'wait'>;
   lockParent: () => void;
+  /** Keep the parent area open for 5 minutes (e.g. right after setting the PIN). */
+  keepParentUnlocked: () => void;
 }
 
 const UNLOCK_MS = 5 * 60_000;
@@ -115,6 +117,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [settings.parentLock],
   );
   const lockParent = useCallback(() => setUnlockedUntil(0), []);
+  const keepParentUnlocked = useCallback(() => setUnlockedUntil(Date.now() + UNLOCK_MS), []);
 
   useEffect(() => {
     getSettings().then(setSettings);
@@ -179,8 +182,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       parentLocked,
       unlockParent,
       lockParent,
+      keepParentUnlocked,
     }),
-    [settings, updateSettings, route, dataVersion, toast, caps, voices, haptic, parentLocked, unlockParent, lockParent],
+    [settings, updateSettings, route, dataVersion, toast, caps, voices, haptic, parentLocked, unlockParent, lockParent, keepParentUnlocked],
   );
 
   return (

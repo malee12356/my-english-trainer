@@ -61,7 +61,7 @@ export function PinUnlockSheet({ open, onClose, onUnlocked }: { open: boolean; o
 
 /** Set or change the parent PIN on this device. */
 export function SetPinSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { L, updateSettings, toast } = useApp();
+  const { L, updateSettings, toast, keepParentUnlocked } = useApp();
   const [a, setA] = useState('');
   const [b, setB] = useState('');
   useEffect(() => {
@@ -79,7 +79,8 @@ export function SetPinSheet({ open, onClose }: { open: boolean; onClose: () => v
           e.preventDefault();
           if (!ok) return;
           await updateSettings({ parentLock: await makeLock(a) });
-          toast(L('Eltern-PIN gespeichert 🔒', 'Parent PIN saved 🔒'));
+          keepParentUnlocked();
+          toast(L('Eltern-PIN gespeichert 🔒 – noch 5 Minuten entsperrt', 'Parent PIN saved 🔒 – unlocked for 5 more minutes'));
           onClose();
         }}
       >
@@ -144,7 +145,7 @@ export function SetupCodeSheet({ open, onClose, onApplied, initialText = '' }: {
 
 /** Parent's app: create a setup message for the pupil's app. */
 export function SetupGeneratorSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { L, toast } = useApp();
+  const { L } = useApp();
   const [grade, setGrade] = useState<KidGrade>('5-6');
   const [words, setWords] = useState(20);
   const [mpw, setMpw] = useState(1);
@@ -163,14 +164,6 @@ export function SetupGeneratorSheet({ open, onClose }: { open: boolean; onClose:
   const create = async () => {
     const cfg: SetupConfig = { v: 1, profile: 'kid', grade, words, minutesPerWord: mpw, lock: await makeLock(a) };
     setMessage(setupMessage(cfg, appUrl));
-  };
-  const share = async () => {
-    try {
-      if (navigator.share) await navigator.share({ text: message, title: 'English Trainer – Einrichtung' });
-      else toast((await copyText(message)) ? L('Kopiert', 'Copied') : L('Kopieren nicht möglich', 'Copy failed'));
-    } catch {
-      /* cancelled */
-    }
   };
   const sel = { width: 'auto', minHeight: 38, padding: '6px 32px 6px 10px', backgroundPosition: 'calc(100% - 18px) 16px, calc(100% - 12px) 16px' } as const;
   return (
@@ -195,12 +188,60 @@ export function SetupGeneratorSheet({ open, onClose }: { open: boolean; onClose:
           <p className="tiny muted" style={{ margin: 0 }}>{L('Die PIN steht nicht im Klartext in der Nachricht. Später geänderte Regeln mit derselben PIN übernimmt die Schüler-App ohne PIN-Abfrage.', 'The PIN is not in the message in plain text. Later changes with the same PIN are accepted without asking for the PIN.')}</p>
         </form>
       ) : (
+        <SetupMessageActions message={message} />
+      )}
+    </Sheet>
+  );
+}
+
+/** WhatsApp / share / copy buttons ABOVE the message (visible without scrolling). */
+export function SetupMessageActions({ message }: { message: string }) {
+  const { L, toast } = useApp();
+  const share = async () => {
+    try {
+      if (navigator.share) await navigator.share({ text: message, title: 'English Trainer – Einrichtung' });
+      else toast((await copyText(message)) ? L('Kopiert', 'Copied') : L('Kopieren nicht möglich', 'Copy failed'));
+    } catch {
+      /* cancelled */
+    }
+  };
+  return (
+    <div className="stack">
+      <a className="btn block big" href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer">💬 {L('Per WhatsApp senden', 'Send via WhatsApp')}</a>
+      <div className="row">
+        <button className="btn secondary grow" onClick={share}>📤 {L('Teilen', 'Share')}</button>
+        <button className="btn secondary grow" onClick={async () => toast((await copyText(message)) ? L('Kopiert', 'Copied') : L('Kopieren nicht möglich', 'Copy failed'))}>📋 {L('Kopieren', 'Copy')}</button>
+      </div>
+      <p className="tiny muted" style={{ margin: 0 }}>{L('Auf dem anderen iPhone: Nachricht kopieren → App öffnen → „Einrichtungscode einfügen“.', 'On the other iPhone: copy the message → open the app → “Paste setup code”.')}</p>
+      <pre className="prompt" aria-label={L('Einrichtungs-Nachricht', 'Setup message')}>{message}</pre>
+    </div>
+  );
+}
+
+/** Send the setup of THIS device (pupil profile + PIN already set here) to another device. */
+export function ShareCurrentSetupSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { L, settings } = useApp();
+  const lock = settings.parentLock;
+  const message = lock
+    ? setupMessage(
+        { v: 1, profile: 'kid', grade: settings.kidGrade ?? '5-6', words: settings.challengeWords ?? 20, minutesPerWord: settings.minutesPerWord ?? 1, lock },
+        `${location.origin}${location.pathname}`,
+      )
+    : '';
+  return (
+    <Sheet open={open} onClose={onClose} title={L('Einrichtung per WhatsApp senden', 'Send setup via WhatsApp')}>
+      {message ? (
         <div className="stack">
-          <pre className="prompt" aria-label={L('Einrichtungs-Nachricht', 'Setup message')}>{message}</pre>
-          <button className="btn block" onClick={share}>📤 {L('Teilen', 'Share')}</button>
-          <a className="btn block secondary" href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer">💬 {L('Per WhatsApp senden', 'Send via WhatsApp')}</a>
-          <button className="btn block ghost" onClick={async () => toast((await copyText(message)) ? L('Kopiert', 'Copied') : L('Kopieren nicht möglich', 'Copy failed'))}>📋 {L('Kopieren', 'Copy')}</button>
+          <div className="banner ok small">
+            {L(
+              `Schüler · ${gradeInfo(settings.kidGrade).de} · ${settings.challengeWords ?? 20} Wörter · ${String(settings.minutesPerWord ?? 1).replace('.', ',')} Min. pro Wort · mit deiner Eltern-PIN`,
+              `Pupil · ${gradeInfo(settings.kidGrade).en} · ${settings.challengeWords ?? 20} words · ${settings.minutesPerWord ?? 1} min per word · your parent PIN`,
+            )}
+          </div>
+          <SetupMessageActions message={message} />
         </div>
+      ) : (
+        <p className="small muted">{L('Bitte zuerst eine Eltern-PIN festlegen.', 'Please set a parent PIN first.')}</p>
       )}
     </Sheet>
   );
