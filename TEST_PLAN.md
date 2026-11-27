@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.4.0):** Typecheck ✅ · 109/109 Unit-/Integrationstests ✅ · 39/39 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.4.1):** Typecheck ✅ · 110/110 Unit-/Integrationstests ✅ · 40/40 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -51,7 +51,7 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] D2 Einstellungen: British/American umschalten, Stimme wählen, Tempo ändern → hörbar
 - [ ] D3 Über Bluetooth (Auto/Kopfhörer) hörbar
 - [ ] D4 Im Flugmodus: Sprachausgabe funktioniert weiter (Systemstimme)
-- [ ] D5 **Stummschalter an**: Wird trotzdem vorgelesen (Audio-Sitzung „Wiedergabe“, iOS 17+)? Ergebnis notieren
+- [ ] D5 **Stummschalter an**: Wird trotzdem vorgelesen (stille Medienwiedergabe + Audio-Sitzung)? Ergebnis notieren; Lautsprecher-Knopf pulsiert während der Ansage
 - [ ] D7 Nach einer Speaking-Übung: Vorlesen kommt über den Lautsprecher, nicht leise über die Hörmuschel
 - [ ] D8 Einstellungen → Sprache testen → „Vorlesen testen“: Protokoll zeigt `start` und `end`
 - [ ] D6 Bildschirm sperren während Ausgabe → Ausgabe stoppt (erwartete iOS-Grenze, dokumentieren)

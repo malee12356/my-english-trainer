@@ -53,3 +53,18 @@ test('speech test screen can test the speech output', async ({ page }) => {
   await expect(page.getByRole('status').filter({ hasText: 'Vorlesen gestartet und beendet' })).toBeVisible();
   await expect(page.locator('pre.prompt')).toContainText('tts speak-called: en-GB · system voice');
 });
+
+test('the speaker button is clearly highlighted while speaking', async ({ page }) => {
+  await fakeTts(page);
+  await page.addInitScript(() => {
+    // make the fake speech last a moment
+    const synth = window.speechSynthesis as unknown as { speak: (u: { onstart?: () => void; onend?: () => void }) => void };
+    synth.speak = (u) => { setTimeout(() => u.onstart?.(), 10); setTimeout(() => u.onend?.(), 800); };
+  });
+  await loadStarter(page);
+  await page.goto('/#/vocab');
+  const btn = page.getByRole('button', { name: 'Vorlesen' }).first();
+  await btn.click();
+  await expect(btn).toHaveAttribute('aria-pressed', 'true');
+  await expect(btn).toHaveAttribute('aria-pressed', 'false', { timeout: 3000 });
+});

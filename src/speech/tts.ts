@@ -9,6 +9,7 @@
  */
 import type { Accent } from '../domain/types';
 import { setAudioSession } from './audioSession';
+import { startUnmute } from './unmute';
 
 export function ttsSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
@@ -98,11 +99,13 @@ export function speak(text: string, o: SpeakOptions & { onEvent?: (name: string,
     u.volume = 1;
     let settled = false;
     let started = false;
+    let stopUnmute: () => void = () => undefined;
     const finish = (r: SpeakResult) => {
       if (settled) return;
       settled = true;
       clearTimeout(guard);
       if (current === u) current = null;
+      stopUnmute();
       resolve(r);
     };
     u.onstart = () => {
@@ -128,6 +131,8 @@ export function speak(text: string, o: SpeakOptions & { onEvent?: (name: string,
     if (synth.speaking || synth.pending) synth.cancel();
     if (synth.paused) synth.resume();
     current = u;
+    // silent media playback so the speech is audible even with the ring/silent switch on (iOS)
+    stopUnmute = startUnmute(log);
     log('speak-called', `${u.lang}${o.voice ? ` · ${o.voice.name}` : ' · system voice'}`);
     synth.speak(u);
   });

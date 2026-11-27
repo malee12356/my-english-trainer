@@ -57,6 +57,8 @@ test('profile can be switched in settings without losing progress', async ({ pag
   await presetProfile(page, 'adult');
   await page.goto('/');
   await page.goto('/#/settings');
+  // the profile switch is the first control on the settings page
+  await expect(page.getByRole('heading', { name: 'Profil – wer lernt?' })).toBeInViewport();
   await page.getByRole('group', { name: 'Profil' }).getByRole('button', { name: /Kinder/ }).click();
   await page.goto('/#/home');
   await expect(page.getByRole('button', { name: "🚀 Los geht's!" })).toBeVisible();
