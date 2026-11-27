@@ -28,7 +28,7 @@ src/
     summary.ts      Dashboard-Kennzahlen
     promptBuilder.ts ChatGPT-Prompt
     topics.ts       Themenmodi + Kategorie-Zuordnung
-  db/           Dexie-Schema (db.ts), Zugriffsschicht (repo.ts), Backup (backup.ts)
+  db/           Dexie-Schema (db.ts), Zugriffsschicht (repo.ts), Backup (backup.ts), automatische Kopien (snapshots.ts)
   speech/       TTS, Fähigkeits-Erkennung, Schnittstelle für Profi-Aussprachebewertung
   screens/      Bildschirme; exercises/ = Lernmethoden
   ui/           Komponenten, Icons, Datei-Helfer
@@ -112,3 +112,7 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 
 - **Firebase-Sync (Phase 4, nur nach Freigabe):** Datenmodell mit stabilen IDs und `updated_at`, Backup-Format = Sync-Payload. Geplante Struktur `users/{uid}/items/{id}`, `users/{uid}/progress/{id}`, Rules nur `request.auth.uid == uid`, Emulator-Tests der Rules.
 - **Profi-Aussprachebewertung:** `src/speech/pronunciationProvider.ts` – Schnittstelle ohne Implementierung; jeder Anbieter benötigt Zustimmung, keine Schlüssel im Bundle.
+
+## Automatische Kopien (v0.9.0)
+
+`src/db/snapshots.ts` speichert vollständige Backup-JSONs im Store `snapshots` (max. 10). Auslöser: Ende einer Lerneinheit (`Session`) sowie vor `applyImport` (außer Starterpaket), `deleteItems`, `removeStarterPack`, `applySetup`, Backup-Restore und dem Zurückholen selbst. Fehler beim Anlegen blockieren nie die eigentliche Aktion. Die Kopien liegen in derselben IndexedDB und schützen daher nur vor Fehlbedienung in der App, nicht vor dem Löschen der Web-App. Dafür gibt es nach jeder Einheit das Ein-Tipp-Datei-Backup (`src/ui/BackupNudge.tsx`); iOS erlaubt das Schreiben in Dateien nur nach einem Nutzer-Tipp.

@@ -18,6 +18,8 @@ import { detectSpeechCapabilities } from '../speech/capabilities';
 import type { ExerciseProps } from './exercises/shared';
 import { xpForAnswer, SESSION_BONUS_XP, MIN_ANSWERS_FOR_BONUS } from '../domain/gamification';
 import { KidSummary } from './kids/KidSummary';
+import { createSnapshot } from '../db/snapshots';
+import { BackupNudge } from '../ui/BackupNudge';
 import { ChallengeSummary } from './kids/ChallengeSummary';
 import { hasScope, inScope, planHomework, scopeFromQuery, scopeLabel, scopeQuery } from '../domain/scope';
 import { DEFAULT_CHALLENGE_WORDS, DEFAULT_MINUTES_PER_WORD, earnsReward, planChallenge, type ChallengeAnswer, type ChallengeResult } from '../domain/challenge';
@@ -48,6 +50,14 @@ export function SessionScreen() {
   const rewards = useRef(new Map<string, boolean>());
   const [challengeResult, setChallengeResult] = useState<ChallengeResult | null>(null);
   const taskStart = useRef(Date.now());
+  const snapshotDone = useRef(false);
+  // automatic in-app copy as soon as the session is complete (also if the app is closed on the summary)
+  useEffect(() => {
+    if (queue && queue.length > 0 && idx >= queue.length && !snapshotDone.current) {
+      snapshotDone.current = true;
+      void createSnapshot('Nach einer Lerneinheit');
+    }
+  }, [idx, queue]);
   const { confirm, dialog } = useConfirm();
 
   useEffect(() => {
@@ -96,6 +106,8 @@ export function SessionScreen() {
   const item = task ? itemsById.get(task.itemId) : undefined;
 
   const finish = () => {
+    if (stats.answered > 0 && !snapshotDone.current) void createSnapshot('Nach einer Lerneinheit');
+    snapshotDone.current = true;
     stopSpeaking();
     bump();
     navigate('/home', true);
@@ -233,6 +245,7 @@ export function SessionScreen() {
             <div className="card stat"><span className="value">{stats.answered ? Math.round((stats.correct / stats.answered) * 100) : 0}%</span><span className="label">{L('richtig', 'correct')}</span></div>
             <div className="card stat"><span className="value">{Math.max(1, Math.round(stats.activeMs / 60000))}</span><span className="label">{L('Minuten', 'minutes')}</span></div>
           </div>
+          <BackupNudge />
           <button className="btn block big" onClick={finish}>{L('Fertig', 'Done')}</button>
           <a className="btn block secondary" href="#/learn">{L('Weiter lernen', 'Keep learning')}</a>
         </div>

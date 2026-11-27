@@ -26,7 +26,7 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 | ChatGPT-Assistent | Konfigurierbarer Prompt (Anzahl, Thema, Fokus, Niveau, Inhaltsarten) zum Kopieren |
 | Vokabeln | Suche, Filter (Status, Kategorie, Niveau, Typ, Sammlung), Sortierung, Favoriten, Archiv, Sammlungen, Mehrfachauswahl, Bearbeiten, Löschen mit Bestätigung, Anhören |
 | Statistik | Lernzeit Tag/Woche/Monat, 7/30/90 Tage, Erfolgsquote je Methode, Fortschritt je Kategorie, Fehlerquote pro Woche, Aktivitätskalender, Serie; gemessen vs. geschätzt gekennzeichnet |
-| Backup | Vollständiges versioniertes JSON-Backup, Restore mit Vorschau & Validierung, CSV/JSON-Export, Erinnerung, letzte Sicherung |
+| Backup | Automatische Kopien in der App (nach jeder Einheit und vor riskanten Aktionen, letzte 10, Zurückholen mit einem Tipp), Ein-Tipp-Backup nach jeder Einheit, vollständiges versioniertes JSON-Backup, Restore mit Vorschau & Validierung, CSV/JSON-Export, Erinnerung, letzte Sicherung |
 | Sprache | Sprachausgabe (Web Speech API, britisch/amerikanisch, Stimme, Tempo, Wiederholungen, Pausen); Spracherkennung im Speaking Mode (benötigt Internet + Zustimmung); Aufnahme vorbereitet |
 | UI | Deutsch (Standard) oder Englisch, Hell/Dunkel/System, Safe Areas, große Touch-Ziele, Bottom Navigation |
 
@@ -46,6 +46,8 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 **Daten sichern**
 - Einstellungen → **Backup & Wiederherstellung** → „Vollständiges Backup exportieren“ → **„In Dateien sichern“** (z. B. iCloud Drive).
 - Wiederherstellen: dort „Backup-Datei wählen“ → Vorschau prüfen → bestätigen.
+- Nach jeder Lerneinheit: **„💾 Fortschritt sichern → Sichern“** → „In Dateien sichern“.
+- **Automatische Kopien:** Die App sichert nach jeder Einheit und vor Import, Löschen, Wiederherstellen und Einrichtungscode selbst einen Stand (letzte 10). Zurückholen unter Backup → „Automatische Kopien“. Diese Kopien liegen in der App und schützen **nicht** vor dem Löschen der App – dafür das Datei-Backup.
 - Die App erinnert nach einstellbarer Zeit (Standard 7 Tage) an ein Backup.
 - Safari und die installierte App haben **getrennte Speicher**. Lerne immer in derselben Variante, am besten in der installierten App. Übertragen geht per Backup und Wiederherstellen.
 - Wichtig: iOS kann Daten von Web-Apps in seltenen Fällen löschen (Speichermangel, App-Löschung vom Home-Bildschirm). Backups sind deshalb Pflicht.

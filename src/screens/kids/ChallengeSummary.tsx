@@ -3,6 +3,7 @@ import { challengeShareText, type ChallengeResult } from '../../domain/challenge
 import { useApp } from '../../state';
 import { copyText } from '../../ui/files';
 import { RobotSays } from '../../ui/Robot';
+import { BackupNudge } from '../../ui/BackupNudge';
 import { shareResult, whatsappUrl } from '../../ui/share';
 import { Confetti } from './KidParts';
 
@@ -63,6 +64,7 @@ export function ChallengeSummary({ result, onDone }: { result: ChallengeResult; 
           </div>
         </section>
       )}
+      <BackupNudge />
       <button className="btn block secondary" onClick={onDone}>{L('Fertig', 'Done')}</button>
     </div>
   );

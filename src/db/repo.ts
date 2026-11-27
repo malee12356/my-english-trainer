@@ -1,5 +1,6 @@
 /** Data access layer. UI code talks to the database only through this module. */
 import { db } from './db';
+import { createSnapshot } from './snapshots';
 import { draftToItem, mergeDraft, parseImport, planImport, type ImportPlan } from '../domain/importer';
 import { uuid } from '../domain/ids';
 import { applyReview, newProgress, progressId } from '../domain/scheduler';
@@ -112,7 +113,8 @@ export async function bulkUpdate(ids: string[], fn: (it: Item) => Item): Promise
 }
 
 /** Deletes items and their learning progress. Review logs stay for statistics. */
-export async function deleteItems(ids: string[]): Promise<void> {
+export async function deleteItems(ids: string[], reason = 'Vor dem Löschen von Einträgen'): Promise<void> {
+  if (ids.length) await createSnapshot(reason);
   const d = db();
   await d.transaction('rw', d.items, d.progress, async () => {
     await d.items.bulkDelete(ids);
@@ -148,6 +150,7 @@ export interface ImportResult {
  * written; learning progress (separate table) is never touched.
  */
 export async function applyImport(plan: ImportPlan, source?: string, origin: Item['origin'] = 'import'): Promise<ImportResult> {
+  if (origin !== 'starter') await createSnapshot('Vor dem Import');
   const d = db();
   const now = new Date().toISOString();
   const res: ImportResult = { added: 0, updated: 0, skipped: 0, categoriesCreated: 0 };
@@ -386,7 +389,7 @@ export async function starterPackInfo(pack: StarterPack): Promise<{ count: numbe
  */
 export async function removeStarterPack(pack: StarterPack): Promise<number> {
   const ids = (await db().items.toArray()).filter((i) => inPack(i, pack)).map((i) => i.id);
-  await deleteItems(ids);
+  await deleteItems(ids, 'Vor dem Entfernen von Standardvokabeln');
   return ids.length;
 }
 
@@ -397,6 +400,7 @@ export async function removeStarterPack(pack: StarterPack): Promise<number> {
  * vocabulary of the grade is loaded as well. Learning data is never touched.
  */
 export async function applySetup(cfg: import('../domain/parental').SetupConfig): Promise<void> {
+  await createSnapshot('Vor dem Einrichtungscode');
   const empty = (await db().items.count()) === 0;
   await saveSettings({
     profile: 'kid',
