@@ -12,8 +12,10 @@ test('first start asks who is learning; kids get Robo, missions and school vocab
   expect(await page.evaluate(() => document.documentElement.dataset.profile)).toBe('kid');
   expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   await page.goto('/#/vocab');
-  await expect(page.getByText('pencil case')).toBeVisible();
-  await expect(page.getByText('boundary conditions')).toHaveCount(0);
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('pencil case');
+  await expect(page.getByText('pencil case', { exact: true })).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('boundary conditions');
+  await expect(page.getByText('Keine Treffer')).toBeVisible();
   await page.goto('/#/learn');
   await expect(page.getByRole('button', { name: /Schule & Unterricht/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Engineering/ })).toHaveCount(0);
@@ -92,6 +94,9 @@ test('pupil vocabulary loaded by mistake in the adult profile can be removed aga
   await expect(page.getByText(/Einträge entfernt/)).toBeVisible();
   await expect(sheet.getByRole('button', { name: 'Schüler-Vokabeln entfernen (0)' })).toBeDisabled();
   await page.goto('/#/vocab');
-  await expect(page.getByText('pencil case')).toHaveCount(0);
-  await expect(page.getByText('boundary conditions')).toBeVisible();
+  // the list shows 100 entries per page – use the search to check specific items
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('pencil case');
+  await expect(page.getByText('Keine Treffer')).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Suchen' }).fill('boundary conditions');
+  await expect(page.getByText('boundary conditions', { exact: true })).toBeVisible();
 });
