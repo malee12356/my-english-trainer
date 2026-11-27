@@ -45,7 +45,8 @@ export function SettingsScreen() {
         <ListLink to="/import" icon="📥" title={L('Datei / Text importieren', 'Import file / text')} subtitle="JSON · CSV" />
         <ListLink to="/item/new" icon="✍️" title={L('Manuell hinzufügen', 'Add manually')} />
         <ListLink to="/backup" icon="💾" title={L('Backup & Wiederherstellung', 'Backup & restore')} subtitle={settings.lastBackupAt ? `${L('Letztes Backup', 'Last backup')}: ${new Date(settings.lastBackupAt).toLocaleDateString()}` : L('Noch kein Backup', 'No backup yet')} />
-        <ListLink onClick={async () => { const r = await loadStarterContent(); bump(); toast(L(`${r.added} neue Starter-Einträge`, `${r.added} new starter items`)); }} icon="🌱" title={L('Starter-Inhalte laden', 'Load starter content')} subtitle={L('Allgemeine Beispiele für alle Themenmodi', 'Generic examples for all topic modes')} />
+        <ListLink onClick={async () => { const r = await loadStarterContent('kid'); bump(); toast(L(`${r.added} Kinder-Vokabeln geladen`, `${r.added} kids items loaded`)); }} icon="🎒" title={L('Kinder-Vokabeln laden (Kl. 5–6)', 'Load kids vocabulary (years 5–6)')} subtitle={L('≈ 120 Wörter und Sätze: Schule, Familie & Tiere, Alltag', '≈ 120 words and sentences: school, family & animals, daily life')} />
+        <ListLink onClick={async () => { const r = await loadStarterContent('adult'); bump(); toast(L(`${r.added} neue Starter-Einträge`, `${r.added} new starter items`)); }} icon="🌱" title={L('Standardvokabeln laden', 'Load default vocabulary')} subtitle={L('≈ 160 allgemeine Einträge für alle Themenmodi – nur fehlende werden ergänzt', '≈ 160 generic items for all topic modes – only missing ones are added')} />
       </div>
 
       <h2 className="section-title">{L('Lernen', 'Learning')}</h2>
@@ -94,6 +95,16 @@ export function SettingsScreen() {
 
       <h2 className="section-title">{L('Darstellung & Bedienung', 'Appearance & controls')}</h2>
       <div className="list">
+        <div className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+          <span>{L('Profil', 'Profile')}</span>
+          <Segmented
+            label={L('Profil', 'Profile')}
+            value={settings.profile ?? 'adult'}
+            onChange={(v) => updateSettings({ profile: v, profileChosen: true })}
+            options={[{ value: 'adult', label: L('Erwachsene', 'Adults') }, { value: 'kid', label: L('Kinder (Kl. 5–6) 🤖', 'Kids (years 5–6) 🤖') }]}
+          />
+          <span className="tiny muted">{L('Kinder: bunt, Roboter Robo, Sterne, Level, Abzeichen und eigene Themen. Lernfortschritt bleibt erhalten.', 'Kids: colourful, Robo the robot, stars, levels, badges and own topics. Progress is kept.')}</span>
+        </div>
         <div className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
           <span>{L('Design', 'Theme')}</span>
           <Segmented label={L('Design', 'Theme')} value={settings.theme} onChange={(v) => updateSettings({ theme: v })} options={[{ value: 'system', label: 'System' }, { value: 'light', label: L('Hell', 'Light') }, { value: 'dark', label: L('Dunkel', 'Dark') }]} />

@@ -92,7 +92,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (settings.theme === 'system') delete root.dataset.theme;
     else root.dataset.theme = settings.theme;
     root.lang = settings.uiLang;
-  }, [settings.theme, settings.uiLang]);
+    if (settings.profile === 'kid') root.dataset.profile = 'kid';
+    else delete root.dataset.profile;
+  }, [settings.theme, settings.uiLang, settings.profile]);
 
   const updateSettings = useCallback(async (patch: Partial<Settings>) => {
     const next = await saveSettings(patch);

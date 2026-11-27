@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { finishFlashcardSession, importPasted } from './helpers';
+import { emptyApp } from './helpers';
+
+test.beforeEach(async ({ page }) => emptyApp(page));
 
 const SPEC = JSON.stringify([
   { english: 'to take into account', german: 'berücksichtigen', example_en: 'We need to take this into account.', example_de: 'Wir müssen das berücksichtigen.', alternatives: ['to consider'], ipa: '/tə teɪk ˈɪntuː əˈkaʊnt/', category: 'Meeting Mode', level: 'B2' },
@@ -76,7 +79,10 @@ test('full backup export and restore into an empty app', async ({ page, browser 
 
   const ctx2 = await browser.newContext();
   const p2 = await ctx2.newPage();
-  await p2.goto('/#/backup');
+  await p2.goto('/');
+  // a new device: the first-start question offers restoring a backup
+  await p2.getByRole('button', { name: /Ich habe ein Backup/ }).click();
+  await expect(p2.getByText(/Letztes Backup/)).toBeVisible();
   await p2.getByLabel('Backup-Datei wählen').setInputFiles(file!);
   await expect(p2.getByText('Backup gültig')).toBeVisible();
   await expect(p2.getByText(/2 Einträge/)).toBeVisible();
@@ -97,4 +103,14 @@ test('ChatGPT prompt can be configured and copied', async ({ page, context }) =>
   await expect(page.locator('pre.prompt')).toContainText('Topic: Engineering Mode');
   await page.getByRole('button', { name: 'Prompt kopieren' }).click();
   await expect(page.getByText(/Prompt kopiert|Kopieren nicht möglich/)).toBeVisible();
+});
+
+test('ChatGPT message copied as a whole (Markdown escapes) is repaired and imported', async ({ page }) => {
+  await page.goto('/');
+  const pasted = '\\[ { "english": "I can\'t really judge him because I\'m no better myself.", "german": "Ich kann ihn eigentlich nicht verurteilen, weil ich selbst nicht besser bin.", "type": "correction", "category": "Everyday English", "level": "B1", "example\\_en": "I can\'t really judge others because I\'m no better myself.", "example\\_de": "Ich kann andere nicht verurteilen." } \\]';
+  await importPasted(page, pasted);
+  await expect(page.getByText('1 neu')).toBeVisible();
+  await expect(page.getByText(/automatisch repariert/)).toBeVisible();
+  await page.getByRole('button', { name: 'Import bestätigen (1)' }).click();
+  await expect(page.getByText("I can't really judge him because I'm no better myself.")).toBeVisible();
 });

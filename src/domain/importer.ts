@@ -65,33 +65,81 @@ export interface ImportPlan {
   newCategories: CategoryRef[];
   counts: Record<RowStatus, number>;
   fatal?: string;
+  /** Automatic repairs applied to pasted text (e.g. Markdown escapes). */
+  repairs?: string[];
 }
 
 /* ------------------------------------------------------------------ parsing */
 
 export function detectFormat(text: string): 'json' | 'csv' {
-  const t = stripFences(text).trimStart();
-  return t.startsWith('[') || t.startsWith('{') ? 'json' : 'csv';
+  const t = unescapeMarkdown(stripFences(text)).trimStart();
+  if (t.startsWith('[') || t.startsWith('{')) return 'json';
+  // JSON embedded in text ("Here is your file: [ ... ]")
+  if (/"english"\s*:/.test(t) && /[[{]/.test(t)) return 'json';
+  return 'csv';
 }
 
 /** ChatGPT often wraps JSON in ```json fences – remove them. */
 export function stripFences(text: string): string {
   const m = text.match(/```(?:json|csv)?\s*\n([\s\S]*?)```/i);
-  return (m ? m[1] : text).replace(/^﻿/, '').trim();
+  return (m ? m[1] : text).replace(/^\uFEFF/, '').trim();
 }
 
-export function parseImport(text: string, format: 'json' | 'csv' | 'auto' = 'auto'): { format: 'json' | 'csv'; rows: ParsedRow[]; fatal?: string } {
+/**
+ * Copying a normal ChatGPT answer (instead of the code block) produces
+ * Markdown escapes such as "\[ … \]" or "example\_en". JSON never contains
+ * a backslash before these characters, so they can be removed safely.
+ */
+export function unescapeMarkdown(text: string): string {
+  return text.replace(/(^|[^\\])\\([[\]_*#`~>|-])/g, '$1$2').replace(/(^|[^\\])\\([[\]_*#`~>|-])/g, '$1$2');
+}
+
+/** Cut the JSON part out of surrounding text. */
+function extractJson(text: string): string {
+  const start = text.search(/[[{]/);
+  if (start < 0) return text;
+  const open = text[start];
+  const close = open === '[' ? ']' : '}';
+  const end = text.lastIndexOf(close);
+  return end > start ? text.slice(start, end + 1) : text.slice(start);
+}
+
+/**
+ * Parse JSON leniently: strict first, then step-by-step repairs of typical
+ * copy & paste damage. Returns which repairs were needed (shown as a hint).
+ */
+export function parseJsonLenient(text: string): { data?: unknown; repairs: string[]; error?: string } {
+  const attempts: { repairs: string[]; text: () => string }[] = [
+    { repairs: [], text: () => text },
+    { repairs: ['markdown'], text: () => extractJson(unescapeMarkdown(text)) },
+    { repairs: ['markdown', 'quotes'], text: () => extractJson(unescapeMarkdown(text)).replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"') },
+    {
+      repairs: ['markdown', 'quotes', 'commas'],
+      text: () => extractJson(unescapeMarkdown(text)).replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"').replace(/,\s*([\]}])/g, '$1'),
+    },
+  ];
+  let firstError = '';
+  for (const a of attempts) {
+    try {
+      return { data: JSON.parse(a.text()), repairs: a.repairs };
+    } catch (e) {
+      firstError ||= (e as Error).message;
+    }
+  }
+  return { repairs: [], error: firstError };
+}
+
+export function parseImport(text: string, format: 'json' | 'csv' | 'auto' = 'auto'): { format: 'json' | 'csv'; rows: ParsedRow[]; fatal?: string; repairs?: string[] } {
   const body = stripFences(text);
   const fmt = format === 'auto' ? detectFormat(body) : format;
   if (!body) return { format: fmt, rows: [], fatal: 'empty' };
   let raw: unknown[];
+  let repairs: string[] = [];
   if (fmt === 'json') {
-    let data: unknown;
-    try {
-      data = JSON.parse(body);
-    } catch (e) {
-      return { format: fmt, rows: [], fatal: `json:${(e as Error).message}` };
-    }
+    const parsed = parseJsonLenient(body);
+    if (parsed.error !== undefined) return { format: fmt, rows: [], fatal: `json:${parsed.error}` };
+    const data = parsed.data;
+    repairs = parsed.repairs;
     if (Array.isArray(data)) raw = data;
     else if (data && typeof data === 'object' && Array.isArray((data as { items?: unknown }).items)) raw = (data as { items: unknown[] }).items;
     else if (data && typeof data === 'object') raw = [data];
@@ -100,7 +148,7 @@ export function parseImport(text: string, format: 'json' | 'csv' | 'auto' = 'aut
     raw = parseCsvObjects(body);
   }
   if (raw.length > MAX_IMPORT_ROWS) return { format: fmt, rows: [], fatal: `too-many:${raw.length}` };
-  return { format: fmt, rows: raw.map((r, i) => validateRow(r, i + 1)) };
+  return { format: fmt, rows: raw.map((r, i) => validateRow(r, i + 1)), repairs };
 }
 
 const STR_MAX = 1000;
@@ -256,7 +304,7 @@ export function diffDraft(existing: Item, draft: ItemDraft): string[] {
   return changes;
 }
 
-export function planImport(parsed: { format: 'json' | 'csv'; rows: ParsedRow[]; fatal?: string }, existing: Item[], existingCategoryIds: string[]): ImportPlan {
+export function planImport(parsed: { format: 'json' | 'csv'; rows: ParsedRow[]; fatal?: string; repairs?: string[] }, existing: Item[], existingCategoryIds: string[]): ImportPlan {
   const byExt = new Map<string, Item>();
   const byKey = new Map<string, Item>();
   for (const it of existing) {
@@ -285,7 +333,7 @@ export function planImport(parsed: { format: 'json' | 'csv'; rows: ParsedRow[]; 
   });
   const counts: Record<RowStatus, number> = { new: 0, update: 0, unchanged: 0, duplicate: 0, invalid: 0 };
   rows.forEach((r) => counts[r.status]++);
-  return { format: parsed.format, rows, newCategories: [...newCats.values()], counts, fatal: parsed.fatal };
+  return { format: parsed.format, rows, newCategories: [...newCats.values()], counts, fatal: parsed.fatal, repairs: parsed.repairs };
 }
 
 /* ------------------------------------------------------------------ merging */

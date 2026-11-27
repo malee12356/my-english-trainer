@@ -93,6 +93,39 @@ describe('JSON import', () => {
   });
 });
 
+describe('pasted ChatGPT text (copy & paste damage)', () => {
+  const entry = '{ "english": "I can\'t really judge him because I\'m no better myself.", "german": "Ich kann ihn eigentlich nicht verurteilen, weil ich selbst nicht besser bin.", "type": "correction", "category": "Everyday English", "level": "B1", "example\\_en": "I can\'t really judge others." }';
+
+  it('repairs Markdown escapes like \\[ … \\] from copying the whole ChatGPT message', () => {
+    const pasted = '\\[ ' + entry + ' \\]';
+    expect(pasted.startsWith('\\[')).toBe(true);
+    const r = parseImport(pasted);
+    expect(r.fatal).toBeUndefined();
+    expect(r.format).toBe('json');
+    expect(r.rows).toHaveLength(1);
+    expect(r.rows[0].draft!.english).toBe("I can't really judge him because I'm no better myself.");
+    expect(r.rows[0].draft!.example_en).toBe("I can't really judge others.");
+    expect(r.repairs).toContain('markdown');
+  });
+
+  it('extracts JSON from surrounding text', () => {
+    const r = parseImport('Hier ist deine Datei:\n[{"english":"pet","german":"Haustier"}]\nViel Spaß!');
+    expect(r.rows[0].draft!.german).toBe('Haustier');
+  });
+
+  it('repairs typographic quotes and trailing commas', () => {
+    const r = parseImport('[{“english”: “pet”, “german”: “Haustier”,},]');
+    expect(r.fatal).toBeUndefined();
+    expect(r.rows[0].draft!.english).toBe('pet');
+    expect(r.repairs).toEqual(['markdown', 'quotes', 'commas']);
+  });
+
+  it('keeps valid JSON untouched (no repairs) and still reports broken JSON', () => {
+    expect(parseImport('[{"english":"a\\\\b","german":"x"}]').repairs).toEqual([]);
+    expect(parseImport('[{"english": "pet", "german": ').fatal).toMatch(/^json:/);
+  });
+});
+
 describe('CSV import', () => {
   it('parses quoted fields, embedded delimiters, newlines and semicolons', () => {
     expect(parseCsv('a,b\n"x, y","he said ""hi"""\n')).toEqual([['a', 'b'], ['x, y', 'he said "hi"']]);

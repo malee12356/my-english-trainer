@@ -97,6 +97,14 @@ Reihenfolge: fällige Wiederholungen (am stärksten überfällig zuerst) → neu
 - Fallback: Die aktuelle Aufgabe wird zur Writing-Aufgabe (Fähigkeit `writing`).
 - Einwilligung `settings.sttConsent` (`granted`/`denied`/nicht gefragt). Gespeichert wird nur der erkannte Text in `reviewLogs.given` (max. 200 Zeichen), keine Audiodaten.
 
+## Kindermodus (v0.4.0)
+
+- Profil `settings.profile` (`adult` | `kid`). Beim ersten Start einer leeren App fragt `Welcome` danach (`resolveProfileOnStart`). Bestehende Installationen mit Inhalten bleiben ohne Nachfrage bei `adult`.
+- Darstellung: `data-profile="kid"` am `<html>` schaltet Farben, Schrift (ui-rounded) und Radien um. `KidHome` ersetzt das Dashboard; der Tab „Statistik“ heißt „Erfolge“.
+- Gamification (`src/domain/gamification.ts`) wird vollständig **aus vorhandenen Daten abgeleitet** (reviewLogs, sessions, progress): XP, Level (`50·n·(n−1)`), Robo-Stufe, Sterne, Abzeichen, Tagesmissionen. Kein zusätzlicher Speicher, immer konsistent, automatisch im Backup.
+- Maskottchen `src/ui/Robot.tsx`: reines SVG, Stimmungen und 5 Stufen, Animationen nur ohne „Bewegung reduzieren“.
+- Test-/Entwickler-Schalter (nur `localStorage`, nicht in der UI): `pet.profile` = `adult`|`kid` beantwortet die Startfrage, `pet.skipStarter` = `1` lädt keine Standardvokabeln.
+
 ## Vorbereitet, nicht aktiv
 
 - **Firebase-Sync (Phase 4, nur nach Freigabe):** Datenmodell mit stabilen IDs und `updated_at`, Backup-Format = Sync-Payload. Geplante Struktur `users/{uid}/items/{id}`, `users/{uid}/progress/{id}`, Rules nur `request.auth.uid == uid`, Emulator-Tests der Rules.

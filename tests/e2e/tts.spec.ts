@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loadStarter } from './helpers';
+import { loadStarter, presetProfile } from './helpers';
 
 /** Replaces speechSynthesis with a recorder; window.__ttsMode controls the outcome. */
 async function fakeTts(page: Page) {
@@ -47,6 +47,7 @@ test('a failing speech output is reported instead of staying silent', async ({ p
 
 test('speech test screen can test the speech output', async ({ page }) => {
   await fakeTts(page);
+  await presetProfile(page, 'adult');
   await page.goto('/#/speech-test');
   await page.getByRole('button', { name: 'Vorlesen testen' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Vorlesen gestartet und beendet' })).toBeVisible();

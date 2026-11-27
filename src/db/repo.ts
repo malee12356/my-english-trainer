@@ -276,8 +276,66 @@ export async function requestPersistentStorage(): Promise<boolean | null> {
 
 /* ----------------------------------------------------------------- starter */
 
-export async function loadStarterContent(): Promise<ImportResult> {
-  const { STARTER_CONTENT } = await import('../data/starter');
+/**
+ * First start: load the built-in starter content once into an empty app.
+ * Never runs again (flag), so deleted starter items do not come back.
+ * Test/dev escape hatch: localStorage "pet.skipStarter" = "1".
+ */
+export async function autoLoadStarterOnFirstStart(profile: Profile = 'adult'): Promise<number> {
+  if (readLocal('pet.skipStarter') === '1') return 0;
+  const s = await getSettings();
+  if (s.starterAutoLoaded) return 0;
+  const count = await db().items.count();
+  await saveSettings({ starterAutoLoaded: true });
+  if (count > 0) return 0;
+  return (await loadStarterContent(profile)).added;
+}
+
+type Profile = 'adult' | 'kid';
+
+function readLocal(key: string): string | null {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Kid defaults: shorter sessions, fewer new words per day. */
+export const KID_DEFAULTS = { dailyGoalMin: 10, defaultDurationMin: 10, newPerDay: 8 } as const;
+
+/** Save the learner profile and load the matching default vocabulary into an empty app. */
+export async function chooseProfile(profile: Profile): Promise<void> {
+  await saveSettings({ profile, profileChosen: true, ...(profile === 'kid' ? KID_DEFAULTS : {}) });
+  await autoLoadStarterOnFirstStart(profile);
+}
+
+/**
+ * Start-up: decide whether the "who is learning?" question is needed.
+ * Existing installations with content keep the adult profile silently.
+ * Test/dev preset: localStorage "pet.profile" = "adult" | "kid".
+ */
+export async function resolveProfileOnStart(): Promise<'ready' | 'needs-choice'> {
+  const s = await getSettings();
+  if (s.profileChosen) {
+    await autoLoadStarterOnFirstStart(s.profile ?? 'adult');
+    return 'ready';
+  }
+  const preset = readLocal('pet.profile');
+  if (preset === 'adult' || preset === 'kid') {
+    await chooseProfile(preset);
+    return 'ready';
+  }
+  if ((await db().items.count()) > 0 || s.starterAutoLoaded) {
+    await saveSettings({ profile: 'adult', profileChosen: true });
+    return 'ready';
+  }
+  return 'needs-choice';
+}
+
+export async function loadStarterContent(profile?: Profile): Promise<ImportResult> {
+  const p = profile ?? (await getSettings()).profile ?? 'adult';
+  const { STARTER_CONTENT } = p === 'kid' ? { STARTER_CONTENT: (await import('../data/starterKids')).STARTER_KIDS } : await import('../data/starter');
   const snap = await loadSnapshot();
   const plan = planImport(parseImport(JSON.stringify(STARTER_CONTENT)), snap.items, snap.categories.map((c) => c.id));
   // never overwrite the user's own content with starter content

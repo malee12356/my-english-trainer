@@ -32,6 +32,15 @@ Legende: ✅ umgesetzt · 🟡 teilweise/vorbereitet · ⬜ offen · 🔒 nur na
 - ⬜ Eigene Sprachaufnahmen (nur im Speicher; dauerhaft nur mit Zustimmung)
 - ⬜ Test auf echtem iPhone: Spracherkennung im installierten PWA-Modus, offline
 
+## Kindermodus (v0.4.0) ✅
+
+- ✅ Profilwahl beim ersten Start, umschaltbar
+- ✅ Maskottchen Robo, XP, Level, Sterne, Abzeichen, Tagesmissionen, buntes Design
+- ✅ Kinder-Themen und ~120 Standardvokabeln (Klasse 5–6)
+- ✅ Schüler-Prompt, Vokabelliste per Foto
+- ⬜ Rückmeldung des Sohnes einarbeiten (Lieblingsspiele, Schwierigkeit, weitere Themen wie Sport/Hobbys)
+- ⬜ Optional: Eltern-Bereich (PIN) für Einstellungen/Backup
+
 ## Phase 3 – Spezialisierte Lernfunktionen
 
 - 🟡 Personal Weakness Mode (Schwachstellen-Score: Fehler, Vergessen, Antwortzeit, Überspringen, Importkorrekturen) – umgesetzt; Ausbau um Verwechslungs- und Sprech-Fehler

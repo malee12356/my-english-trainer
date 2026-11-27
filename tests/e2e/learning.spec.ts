@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { finishFlashcardSession, importPasted, loadStarter } from './helpers';
+import { emptyApp, finishFlashcardSession, importPasted, loadStarter } from './helpers';
 
 test('flashcard session is saved and survives a reload', async ({ page }) => {
   await loadStarter(page);
@@ -20,6 +20,7 @@ test('flashcard session is saved and survives a reload', async ({ page }) => {
 });
 
 test('writing mode marks small typos and shows the solution', async ({ page }) => {
+  await emptyApp(page);
   await page.goto('/');
   await importPasted(page, JSON.stringify([{ english: 'convergence', german: 'Konvergenz', category: 'E2E Topic', explanation: 'Fachbegriff' }]));
   await page.getByRole('button', { name: /Import bestätigen \(1\)/ }).click();

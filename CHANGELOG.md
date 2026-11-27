@@ -2,6 +2,29 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.4.0] – 2026-11-27
+
+### Hinzugefügt – Kindermodus (Klasse 5–6)
+- Beim ersten Start einer leeren App: **„Wer lernt mit dieser App?“** (Kinder / Erwachsene / „Ich habe ein Backup“). Später in den Einstellungen umschaltbar, Lernfortschritt bleibt erhalten.
+- **Maskottchen „Robo“** (SVG-Roboter) mit Stimmungen. Er wächst mit dem Level in fünf Stufen: Mini-Robo → Robo → Super-Robo → Mega-Robo → Robo-Champion.
+- **Gamification:** XP pro Antwort (auch für Versuche), Rundenbonus, Level, 1–3 Sterne pro Runde, Konfetti, 12 Abzeichen, 3 Tagesmissionen, XP-Zähler in der Runde, „Level erreicht!“. Alles wird aus den vorhandenen Lerndaten berechnet: kein neuer Speicher, steckt automatisch im Backup.
+- **Buntes Kinder-Design** (abgerundete Schrift, kräftige Farben, hell und dunkel). Kinder-Startseite mit Missionen, Themen-Kacheln und „Los geht's!“; Tab „Erfolge“ mit Level und Abzeichen.
+- **Kinder-Themen und ~120 Standardvokabeln** (A1–A2): Schule & Unterricht, Familie & Tiere, Alltag. Geplante Lernmethoden sind für Kinder ausgeblendet. Kindgerechte Standardwerte: 10 min, 8 neue Wörter pro Tag.
+- **ChatGPT-Prompt für Schüler** (Klasse 5–6, kindgerecht, einfache deutsche Erklärungen) und für beide Profile die Option **„Vokabelliste (Foto/Datei)“**: Foto der Wörterliste aus dem Englischbuch anhängen, ChatGPT erzeugt die Importdatei.
+
+### Behoben
+- **Import aus ChatGPT schlug fehl**, wenn die ganze Nachricht statt des Codeblocks kopiert wurde (Markdown-Escapes wie `\[ … \]`, `\_`). Der Import repariert das jetzt automatisch, ebenso umgebenden Text, typografische Anführungszeichen und abschließende Kommas, und zeigt einen Hinweis.
+- Der Prompt verlangt jetzt **einen json-Codeblock**; die Anleitung in der App erklärt den Kopier-Knopf des Codeblocks.
+
+## [0.3.0] – 2026-11-27
+
+### Hinzugefügt
+- **Standardvokabeln fest hinterlegt:** 163 allgemeine Einträge (Wörter, Wendungen, Sätze, typische Fehler) über alle fünf Themenmodi.
+- Beim **ersten Start** einer leeren App werden sie automatisch geladen, genau einmal. Gelöschte Standardvokabeln kommen nicht ungefragt zurück. Über Einstellungen → „Standardvokabeln laden“ lassen sich fehlende jederzeit ergänzen, ohne eigene Inhalte oder Fortschritt zu verändern.
+
+### Hinweis
+- Safari und die installierte Home-Bildschirm-App haben auf dem iPhone **getrennte Speicher**. Inhalte und Fortschritt aus Safari erscheinen nicht in der App und umgekehrt (Übertragung per Backup).
+
 ## [0.2.2] – 2026-11-26
 
 ### Behoben

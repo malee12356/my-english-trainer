@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { ensureSetup } from './db/repo';
+import { ensureSetup, resolveProfileOnStart } from './db/repo';
+import { Welcome } from './screens/kids/Welcome';
 import { useApp } from './state';
 import { IconCards, IconChart, IconGear, IconHome, IconLearn } from './ui/icons';
 import { Home } from './screens/Home';
@@ -64,13 +65,19 @@ const TAB_OF: Record<string, string> = {
 };
 
 export function App() {
-  const { route, L } = useApp();
+  const { route, L, settings, updateSettings } = useApp();
   const [ready, setReady] = useState(false);
+  const [needsChoice, setNeedsChoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     ensureSetup()
-      .then(() => setReady(true))
+      .then(() => resolveProfileOnStart())
+      .then(async (r) => {
+        await updateSettings({}); // reload settings (profile may have been set during start-up)
+        if (r === 'needs-choice') setNeedsChoice(true);
+        else setReady(true);
+      })
       .catch((e: Error) => setError(e.message || String(e)));
   }, []);
 
@@ -89,6 +96,17 @@ export function App() {
           ({error})
         </div>
       </main>
+    );
+  }
+  if (needsChoice) {
+    return (
+      <Welcome
+        onDone={async () => {
+          await updateSettings({});
+          setNeedsChoice(false);
+          setReady(true);
+        }}
+      />
     );
   }
   if (!ready) return <main className="page" aria-busy="true" />;
@@ -122,7 +140,7 @@ export function App() {
             {TABS.map(({ path, de, en, Icon }) => (
               <a key={path} href={`#/${path}`} aria-current={activeTab === path ? 'page' : undefined}>
                 <Icon size={25} />
-                <span>{L(de, en)}</span>
+                <span>{settings.profile === 'kid' && path === 'stats' ? L('Erfolge', 'Awards') : L(de, en)}</span>
               </a>
             ))}
           </nav>

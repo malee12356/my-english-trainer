@@ -39,7 +39,7 @@ In CSV werden Listen mit `|` (oder `;`) getrennt; Trennzeichen der Datei (`,` `;
 
 ### Kategorie-Zuordnung
 
-Bekannte Namen/Aliase werden den Themenmodi zugeordnet (`everyday`, `business`, `engineering`, `meeting`, `handball`), z. B. „Meeting Mode“, „meetings“, „Engineering“, „FEM“, „Handball“. Andere Namen erzeugen eine neue Kategorie mit ID `c-<slug>`.
+Bekannte Namen/Aliase werden den Themenmodi zugeordnet (Erwachsene: `everyday`, `business`, `engineering`, `meeting`, `handball`; Kinder: `school` „School & Classroom“, `family` „Family & Animals“, `daily` „Daily Life“), z. B. „Meeting Mode“, „meetings“, „Engineering“, „FEM“, „Handball“. Andere Namen erzeugen eine neue Kategorie mit ID `c-<slug>`.
 
 ### Duplikate & Aktualisierungen
 
@@ -57,7 +57,7 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (`everyday`, `business`, 
 | `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct` |
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
-| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung) |
+| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`) |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 
