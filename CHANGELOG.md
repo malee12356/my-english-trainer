@@ -2,6 +2,16 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.6.0] – 2026-11-27
+
+### Hinzugefügt – Spielzeit-Challenge (Schülerprofil)
+- Startseite: **„🎮 Spielzeit verdienen“**. Die App wählt 20 Wörter, die noch nicht gut sitzen: erst schwierige und oft falsche, dann unsichere gelernte (niedrigste Erinnerungswahrscheinlichkeit), dann neue. Sicher beherrschte Wörter kommen nie dran.
+- Nur aktive Antworten: **Deutsch sehen → Englisch schreiben** (oder sprechen, falls Spracherkennung verfügbar). Kein Durchklicken, kein Hinweis-Knopf, kein „War doch richtig“; keine Wiederholungsschleife, also genau N Wörter.
+- **1 Minute pro richtigem Wort** (Tippfehler zählen nicht). Minutenzähler während der Runde.
+- Ergebnis mit Robo, Konfetti und Liste der noch zu übenden Wörter. **„Fortschritt teilen“** öffnet das Teilen-Menü (z. B. WhatsApp) mit Ergebnisbild und Text. Zusätzlich gibt es einen direkten **WhatsApp-Knopf**.
+- Startseite zeigt „Heute schon X Minuten verdient“.
+- Eltern-Einstellungen (Einstellungen → Profil): Wörter pro Challenge (10–30) und Minuten pro Wort (0,5 / 1 / 2).
+
 ## [0.5.0] – 2026-11-27
 
 ### Hinzugefügt

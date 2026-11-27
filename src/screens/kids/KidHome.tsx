@@ -5,6 +5,7 @@ import { topicsFor } from '../../domain/topics';
 import { navigate, useApp, useSnapshot } from '../../state';
 import { RobotSays } from '../../ui/Robot';
 import { LevelCard, useKidProgress } from './KidParts';
+import { DEFAULT_MINUTES_PER_WORD, minutesEarnedToday } from '../../domain/challenge';
 
 const TOPIC_COLORS = ['purple', 'teal', 'orange', 'pink', 'blue', 'yellow'];
 
@@ -62,6 +63,19 @@ export function KidHome() {
             🚀 {L("Los geht's!", "Let's go!")}
           </button>
         </LevelCard>
+
+        <button className="kid-card teal" style={{ border: 0, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }} onClick={() => navigate('/challenge')}>
+          <span style={{ fontSize: 40 }} aria-hidden="true">🎮</span>
+          <span className="grow">
+            <strong style={{ display: 'block', fontSize: 19 }}>{L('Spielzeit verdienen', 'Earn screen time')}</strong>
+            <span className="small muted">
+              {minutesEarnedToday(snap.sessions, now) > 0
+                ? L(`Heute schon ${minutesEarnedToday(snap.sessions, now)} Minuten verdient`, `${minutesEarnedToday(snap.sessions, now)} minutes earned today`)
+                : L(`Schwierige Wörter schreiben – ${String(settings.minutesPerWord ?? DEFAULT_MINUTES_PER_WORD).replace('.', ',')} Min. pro richtigem Wort`, `Write tricky words – ${settings.minutesPerWord ?? DEFAULT_MINUTES_PER_WORD} min per correct word`)}
+            </span>
+          </span>
+          <span className="btn small">{L('Los', 'Go')}</span>
+        </button>
 
         <section className="kid-card yellow" aria-label={L('Tagesmissionen', 'Daily missions')}>
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>

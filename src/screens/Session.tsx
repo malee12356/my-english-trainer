@@ -18,6 +18,8 @@ import { detectSpeechCapabilities } from '../speech/capabilities';
 import type { ExerciseProps } from './exercises/shared';
 import { xpForAnswer, SESSION_BONUS_XP, MIN_ANSWERS_FOR_BONUS } from '../domain/gamification';
 import { KidSummary } from './kids/KidSummary';
+import { ChallengeSummary } from './kids/ChallengeSummary';
+import { DEFAULT_CHALLENGE_WORDS, DEFAULT_MINUTES_PER_WORD, earnsReward, planChallenge, type ChallengeAnswer, type ChallengeResult } from '../domain/challenge';
 
 const MAX_IDLE_MS = 60_000;
 const MAX_REPEATS = 2;
@@ -27,6 +29,8 @@ export function SessionScreen() {
   const topic = route.query.get('topic') ?? 'all';
   const method = (route.query.get('method') ?? 'auto') as Method | 'auto';
   const minutes = Number(route.query.get('min') ?? settings.defaultDurationMin) || 15;
+  const challenge = route.query.get('mode') === 'challenge';
+  const answerMode: ChallengeAnswer = route.query.get('answer') === 'speaking' ? 'speaking' : 'writing';
 
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [queue, setQueue] = useState<Task[] | null>(null);
@@ -37,6 +41,9 @@ export function SessionScreen() {
   const [saving, setSaving] = useState(false);
   const answered = useRef(new Set<string>());
   const repeats = useRef(new Map<string, number>());
+  /** Challenge: first answer per item → earns screen time? */
+  const rewards = useRef(new Map<string, boolean>());
+  const [challengeResult, setChallengeResult] = useState<ChallengeResult | null>(null);
   const taskStart = useRef(Date.now());
   const { confirm, dialog } = useConfirm();
 
@@ -45,21 +52,31 @@ export function SessionScreen() {
     (async () => {
       const [s, introduced] = await Promise.all([loadSnapshot(), newItemsIntroducedToday()]);
       if (!alive) return;
-      const tasks = planSession(s.items, indexProgress(s.progress), {
-        topic, method, minutes, now: new Date(), newPerDay: s.settings.newPerDay, newIntroducedToday: introduced,
-        flashcardDirection: s.settings.flashcardDirection, ttsAvailable: ttsSupported(),
-        sttAvailable: detectSpeechCapabilities().recognitionUsable,
-      });
+      const sttUsable = detectSpeechCapabilities().recognitionUsable;
+      const tasks = challenge
+        ? planChallenge(s.items, indexProgress(s.progress), new Date(), s.settings.challengeWords ?? DEFAULT_CHALLENGE_WORDS, answerMode === 'speaking' && sttUsable ? 'speaking' : 'writing')
+        : planSession(s.items, indexProgress(s.progress), {
+            topic, method, minutes, now: new Date(), newPerDay: s.settings.newPerDay, newIntroducedToday: introduced,
+            flashcardDirection: s.settings.flashcardDirection, ttsAvailable: ttsSupported(),
+            sttAvailable: sttUsable,
+          });
       setSnap(s);
       setQueue(tasks);
-      if (tasks.length) setSession(await startSession(topic, method));
+      if (tasks.length) {
+        const st = await startSession(challenge ? 'all' : topic, challenge ? (tasks[0].method as Method) : method);
+        if (challenge) {
+          await updateSession(st.id, { kind: 'challenge', rewardMinutes: 0 });
+          st.kind = 'challenge';
+        }
+        setSession(st);
+      }
       taskStart.current = Date.now();
     })();
     return () => {
       alive = false;
       stopSpeaking();
     };
-  }, [topic, method, minutes]);
+  }, [topic, method, minutes, challenge, answerMode]);
 
   const itemsById = useMemo(() => new Map((snap?.items ?? []).map((i) => [i.id, i])), [snap]);
   const progressById = useMemo(() => new Map((snap?.progress ?? []).map((p) => [p.id, p])), [snap]);
@@ -94,8 +111,12 @@ export function SessionScreen() {
     const activeMs = stats.activeMs + Math.min(responseMs, MAX_IDLE_MS);
     await updateSession(session.id, { activeMs, endedAt: new Date().toISOString() });
     setStats((s) => ({ answered: s.answered + 1, correct: s.correct + (grade >= 2 ? 1 : 0), activeMs, xp: s.xp + xpForAnswer(grade) }));
+    if (challenge && !rewards.current.has(task.itemId)) {
+      rewards.current.set(task.itemId, earnsReward(grade, task.method === 'speaking' ? 'speaking' : 'writing'));
+    }
     // Re-ask forgotten items later in this session (practice only – schedule is protected).
-    if (grade === 1) {
+    // Not in the challenge: it is exactly N words.
+    if (grade === 1 && !challenge) {
       const n = repeats.current.get(key) ?? 0;
       if (n < MAX_REPEATS) {
         repeats.current.set(key, n + 1);
@@ -104,6 +125,20 @@ export function SessionScreen() {
         next.splice(pos, 0, { ...task, practice: true, isNew: false });
         setQueue(next);
       }
+    }
+    if (challenge && idx + 1 >= queue.length) {
+      const results = [...rewards.current.entries()];
+      const correct = results.filter(([, ok]) => ok).length;
+      const result: ChallengeResult = {
+        total: queue.length,
+        correct,
+        minutes: correct * (settings.minutesPerWord ?? DEFAULT_MINUTES_PER_WORD),
+        wrong: results.filter(([, ok]) => !ok).map(([id]) => itemsById.get(id)).filter((i): i is NonNullable<typeof i> => !!i).map((i) => ({ english: i.english, german: i.german })),
+        answer: queue.some((t) => t.method === 'speaking') ? 'speaking' : 'writing',
+        finishedAt: new Date(),
+      };
+      await updateSession(session.id, { rewardMinutes: result.minutes });
+      setChallengeResult(result);
     }
     haptic();
     setIdx((i) => i + 1);
@@ -119,7 +154,7 @@ export function SessionScreen() {
     next[idx] = { ...task, method: 'writing', skill: 'writing' };
     setQueue(next);
   };
-  const props: ExerciseProps | null = task && item ? { item, task, progress: progressById.get(progressId(task.itemId, task.skill)), pool, settings, onDone, onFallback } : null;
+  const props: ExerciseProps | null = task && item ? { item, task, progress: progressById.get(progressId(task.itemId, task.skill)), pool, settings, onDone, onFallback, strict: challenge } : null;
 
   return (
     <main className="page no-tabbar">
@@ -132,13 +167,19 @@ export function SessionScreen() {
             <div style={{ width: `${progress * 100}%` }} />
           </div>
           <div className="tiny muted" style={{ marginTop: 4 }}>
-            {topicLabel(topic, snap.categories, lang)} · {methodLabel(method, lang)} · {Math.min(idx + 1, queue.length)}/{queue.length}
+            {challenge ? L('🎮 Spielzeit-Challenge', '🎮 Screen-time challenge') : `${topicLabel(topic, snap.categories, lang)} · ${methodLabel(method, lang)}`} · {Math.min(idx + 1, queue.length)}/{queue.length}
           </div>
         </div>
-        {kid && (
-          <span key={stats.xp} className="xp-pill xp-pop" aria-label={`${stats.xp} XP`}>
-            ⭐ {stats.xp}
+        {challenge ? (
+          <span key={stats.answered} className="xp-pill xp-pop" aria-label={L('verdiente Minuten', 'minutes earned')}>
+            🎮 {[...rewards.current.values()].filter(Boolean).length * (settings.minutesPerWord ?? DEFAULT_MINUTES_PER_WORD)} min
           </span>
+        ) : (
+          kid && (
+            <span key={stats.xp} className="xp-pill xp-pop" aria-label={`${stats.xp} XP`}>
+              ⭐ {stats.xp}
+            </span>
+          )
         )}
       </div>
 
@@ -168,10 +209,11 @@ export function SessionScreen() {
         </div>
       )}
 
-      {done && queue.length > 0 && kid && (
+      {done && challenge && challengeResult && <ChallengeSummary result={challengeResult} onDone={finish} />}
+      {done && queue.length > 0 && kid && !challenge && (
         <KidSummary before={snap} answered={stats.answered} correct={stats.correct} xpGained={stats.xp + (stats.answered >= MIN_ANSWERS_FOR_BONUS ? SESSION_BONUS_XP : 0)} onDone={finish} />
       )}
-      {done && queue.length > 0 && !kid && (
+      {done && queue.length > 0 && !kid && !challenge && (
         <div className="stack" style={{ marginTop: 12 }}>
           <div className="hero center">
             <div style={{ fontSize: 48 }} aria-hidden="true">🎉</div>

@@ -54,10 +54,10 @@ Bekannte Namen/Aliase werden den Themenmodi zugeordnet (Erwachsene: `everyday`, 
 | `items` | `id` (UUID) | Inhalt + `key` (Duplikat-Schlüssel), `externalId`, `origin` (`import`/`manual`/`starter`), `favorite`, `archived`, `collections[]`, `schemaVersion` |
 | `progress` | `itemId:skill` | FSRS: `due`, `stability`, `difficulty`, `state` (0 neu, 1 lernen, 2 wiederholen, 3 neu lernen), `reps`, `lapses`, `last_review`, … + Statistik: `correct`, `wrong`, `skipped`, `answered`, `totalResponseMs`, `lastGrade` |
 | `reviewLogs` | auto | Jede Antwort: `itemId`, `skill`, `method`, `topic`, `grade` 1–4, `correct`, `scheduled` (hat den Plan verändert?), `responseMs`, `sessionId`, `ts`, `isNew`, `given` (getippte Antwort bzw. im Speaking Mode der erkannte Text, max. 200 Zeichen – nie Audio) |
-| `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct` |
+| `sessions` | `id` | `startedAt`, `endedAt`, `activeMs` (gemessen, Leerlauf je Aufgabe max. 60 s), `topic`, `method`, `answered`, `correct`, optional `kind = 'challenge'` + `rewardMinutes` (verdiente Spielzeit) |
 | `categories` | `id` | Themenmodi (`builtin: true`) und eigene Kategorien |
 | `collections` | `id` | Eigene Sammlungen |
-| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`, `kidGrade` = `5-6`/`7-8`/`9-10`) |
+| `settings` | `'settings'` | Einstellungen (Sprache, Design, Tagesziel, Stimme, Tempo, …, `lastBackupAt`, `sttConsent` = Zustimmung zur Spracherkennung, `starterAutoLoaded` = Standardvokabeln wurden beim ersten Start geladen, `profile` = `adult`/`kid`, `profileChosen`, `kidGrade` = `5-6`/`7-8`/`9-10`, `challengeWords`, `minutesPerWord`) |
 
 Skills: `comprehension` (EN→DE), `recall` (DE→EN), `writing`, `listening`, `speaking`.
 

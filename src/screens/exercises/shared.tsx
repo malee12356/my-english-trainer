@@ -16,6 +16,8 @@ export interface ExerciseProps {
   onDone: (grade: Grade, given?: string) => void;
   /** Switch this task to a typing exercise (e.g. speech recognition unavailable). */
   onFallback?: () => void;
+  /** Challenge mode: no hints, no "I was right" overrides. */
+  strict?: boolean;
 }
 
 export function DiffView({ diff, label }: { diff: DiffToken[]; label: string }) {

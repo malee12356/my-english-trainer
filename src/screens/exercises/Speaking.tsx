@@ -32,7 +32,7 @@ function MicIcon({ size = 40 }: { size?: number }) {
  * words are compared with the expected answer. This is word recognition, not a
  * pronunciation assessment.
  */
-export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) {
+export function Speaking({ item, settings, onDone, onFallback, strict }: ExerciseProps) {
   const { L, updateSettings, haptic } = useApp();
   const accepted = useMemo(() => acceptedAnswers(item, 'de-en'), [item]);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -106,7 +106,7 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
       <div className="card center" style={{ padding: '24px 16px' }}>
         <span className="badge">Deutsch → English · {L('sprechen', 'speak')}</span>
         <div className={`term ${item.german.length > 40 ? 'long' : ''}`} style={{ marginTop: 10 }} lang="de">{item.german}</div>
-        {item.example_de && !hint && phase !== 'result' && (
+        {item.example_de && !hint && phase !== 'result' && !strict && (
           <button className="btn ghost small" onClick={() => setHint(true)}>{L('Hinweis zeigen', 'Show hint')}</button>
         )}
         {hint && phase !== 'result' && (
@@ -213,7 +213,7 @@ export function Speaking({ item, settings, onDone, onFallback }: ExerciseProps) 
             {L('Weiter', 'Next')}
           </button>
         )}
-        {phase === 'result' && revealed && verdict !== 'correct' && (
+        {phase === 'result' && revealed && verdict !== 'correct' && !strict && (
           <button className="btn small secondary" onClick={() => onDone(attempt <= 1 ? 3 : 2, evaluation!.transcript)}>
             {L('Erkennung lag falsch – ich hatte es richtig', 'Recognition was wrong – I said it correctly')}
           </button>

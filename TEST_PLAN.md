@@ -10,7 +10,7 @@
 
 CI (`.github/workflows/ci.yml`) führt alles bei jedem Push/PR aus.
 
-**Letzter Lauf (2026-11-27, v0.5.0):** Typecheck ✅ · 114/114 Unit-/Integrationstests ✅ · 42/42 E2E-Tests ✅ · Build ✅.
+**Letzter Lauf (2026-11-27, v0.6.0):** Typecheck ✅ · 118/118 Unit-/Integrationstests ✅ · 43/43 E2E-Tests ✅ · Build ✅.
 
 E2E-Tests, die eine leere App brauchen, setzen vorab `localStorage['pet.skipStarter'] = '1'` (Helfer `emptyApp`).
 
@@ -91,6 +91,14 @@ Version unter Einstellungen → Info prüfen. Ergebnis je Punkt abhaken.
 - [ ] K6 Kopieren der **ganzen** ChatGPT-Nachricht → Import funktioniert mit Hinweis „automatisch repariert“
 - [ ] K7 Einstellungen → Profil → Klassenstufe wechseln → ChatGPT-Prompt nennt die neue Stufe
 - [ ] K8 Einstellungen → „Standardvokabeln entfernen …“ → Schüler-Vokabeln entfernen → eigene Importe bleiben
+
+### L. Spielzeit-Challenge (v0.6.0)
+- [ ] L1 Schülerprofil → Startseite → „Spielzeit verdienen“ → Erklärung mit Anzahl Wörter und maximalen Minuten
+- [ ] L2 „Mit Schreiben starten“ → deutsches Wort, englisch tippen; kein Hinweis-/„War doch richtig“-Knopf
+- [ ] L3 Ende: Minuten = richtige Wörter × Minuten pro Wort; falsche Wörter mit Lösung
+- [ ] L4 „Fortschritt teilen“ → iOS-Teilen-Menü → WhatsApp → Bild + Text kommen beim Empfänger an
+- [ ] L5 „Per WhatsApp senden“ öffnet WhatsApp mit vorausgefülltem Text
+- [ ] L6 Startseite zeigt „Heute schon X Minuten verdient“; Einstellungen: Wortanzahl/Minuten pro Wort ändern
 
 ### H. Darstellung & Barrierefreiheit
 - [ ] H1 iOS-Dunkelmodus umschalten → App folgt automatisch

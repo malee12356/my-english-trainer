@@ -132,6 +132,10 @@ export interface StudySession {
   method: Method | 'auto';
   answered: number;
   correct: number;
+  /** 'challenge' = screen-time challenge (pupils profile). */
+  kind?: 'challenge';
+  /** Screen time earned in this challenge (minutes). */
+  rewardMinutes?: number;
 }
 
 export interface Category {
@@ -185,6 +189,9 @@ export interface Settings {
   profileChosen?: boolean;
   /** School grade band of the kids profile (default 5–6). */
   kidGrade?: '5-6' | '7-8' | '9-10';
+  /** Screen-time challenge: number of words and minutes per correct word. */
+  challengeWords?: number;
+  minutesPerWord?: number;
   onboarded: boolean;
 }
 
