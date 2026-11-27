@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { loadStarterContent, requestPersistentStorage } from '../db/repo';
 import { DURATIONS } from '../domain/methods';
 import { useApp } from '../state';
-import { englishVoices, pickVoice, speak, ttsSupported } from '../speech/tts';
+import { chosenVoice, englishVoices, speak, ttsSupported } from '../speech/tts';
 import { ListLink, Segmented, Toggle } from '../ui/components';
 
 export function SettingsScreen() {
@@ -18,7 +18,7 @@ export function SettingsScreen() {
     navigator.storage?.estimate?.().then((e) => e.usage !== undefined && setUsage(`${(e.usage / 1024 / 1024).toFixed(1)} MB`)).catch(() => undefined);
   }, []);
 
-  const testVoice = () => speak('The simulation results indicate that the maximum stress occurs near the contact area.', { lang: settings.accent, rate: settings.rate, voice: pickVoice(settings.accent, settings.voiceURI, voices) });
+  const testVoice = () => speak('The simulation results indicate that the maximum stress occurs near the contact area.', { lang: settings.accent, rate: settings.rate, voice: chosenVoice(settings.voiceURI, voices) });
 
   const row = (label: string, control: React.ReactNode, sub?: string) => (
     <div className="list-item">
@@ -73,12 +73,12 @@ export function SettingsScreen() {
           <div className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
             <label className="field"><span>{L('Stimme', 'Voice')}</span>
               <select className="select" value={settings.voiceURI ?? ''} onChange={(e) => updateSettings({ voiceURI: e.target.value || undefined })}>
-                <option value="">{L('Automatisch', 'Automatic')} ({pickVoice(settings.accent, undefined, voices)?.name ?? '–'})</option>
+                <option value="">{L('Systemstimme (empfohlen)', 'System voice (recommended)')}</option>
                 {enVoices.map((v) => <option key={v.voiceURI} value={v.voiceURI}>{v.name}{v.localService ? '' : ' (online)'}</option>)}
                 {otherVoices.length > 0 && <optgroup label={L('Andere englische Stimmen', 'Other English voices')}>{otherVoices.map((v) => <option key={v.voiceURI} value={v.voiceURI}>{v.name} · {v.lang}{v.localService ? '' : ' (online)'}</option>)}</optgroup>}
               </select>
             </label>
-            <span className="tiny muted">{L('Weitere Stimmen: iPhone-Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Englisch.', 'More voices: iPhone Settings → Accessibility → Spoken Content → Voices → English.')}</span>
+            <span className="tiny muted">{L('Weitere Stimmen: iPhone-Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Englisch. Bleibt eine gewählte Stimme stumm, ist sie nicht geladen – dann „Systemstimme“ wählen. Ist das iPhone stummgeschaltet, kann auch die Sprachausgabe stumm bleiben.', 'More voices: iPhone Settings → Accessibility → Spoken Content → Voices → English. If a chosen voice stays silent it is not downloaded – choose "System voice". In silent mode speech may stay muted too.')}</span>
           </div>
           <div className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
             <label className="field"><span>{L('Sprechgeschwindigkeit', 'Speech rate')}: {settings.rate.toFixed(2)}×</span>
@@ -117,7 +117,7 @@ export function SettingsScreen() {
           <Toggle checked={settings.sttConsent === 'granted'} onChange={(v) => updateSettings({ sttConsent: v ? 'granted' : 'denied' })} label={L('Zustimmung Spracherkennung', 'Speech recognition consent')} />,
           L('Aufnahmen können vom Anbieter (Apple/Google) verarbeitet werden. Die App speichert keine Aufnahmen.', 'Audio may be processed by the provider (Apple/Google). The app stores no recordings.'),
         )}
-        <ListLink to="/speech-test" icon="🩺" title={L('Spracherkennung testen', 'Test speech recognition')} subtitle={L('Diagnose mit Ereignisprotokoll', 'Diagnostics with event log')} />
+        <ListLink to="/speech-test" icon="🩺" title={L('Sprache testen (Erkennung & Vorlesen)', 'Test speech (recognition & output)')} subtitle={L('Diagnose mit Ereignisprotokoll', 'Diagnostics with event log')} />
         {row(L('Verbindung', 'Connection'), <span className={`badge ${caps.online ? 'green' : 'orange'}`}>{caps.online ? 'online' : 'offline'}</span>)}
       </div>
 

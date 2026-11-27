@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { navigate, useApp } from '../state';
-import { pickVoice, sleep, speak, stopSpeaking, ttsSupported } from '../speech/tts';
+import { chosenVoice, sleep, speak, stopSpeaking, ttsSupported } from '../speech/tts';
 import { IconBack, IconChevron, IconSpeaker } from './icons';
 
 export function NavBar({ title, back, right }: { title: string; back?: string | (() => void); right?: ReactNode }) {
@@ -99,7 +99,7 @@ export function useConfirm() {
 
 /** Speaks English text with the configured voice. Hidden when TTS is unsupported. */
 export function SpeakButton({ text, lang = 'en', label, size = 44, className = '' }: { text: string; lang?: 'en' | 'de'; label?: string; size?: number; className?: string }) {
-  const { settings, voices, L } = useApp();
+  const { settings, voices, L, toast } = useApp();
   const [busy, setBusy] = useState(false);
   if (!ttsSupported() || !text) return null;
   const onClick = async (e: React.MouseEvent) => {
@@ -110,10 +110,20 @@ export function SpeakButton({ text, lang = 'en', label, size = 44, className = '
       return;
     }
     setBusy(true);
-    const voice = lang === 'en' ? pickVoice(settings.accent, settings.voiceURI, voices) : voices.find((v) => v.lang.toLowerCase().startsWith('de'));
+    const voice = lang === 'en' ? chosenVoice(settings.voiceURI, voices) : undefined;
     for (let i = 0; i < Math.max(1, settings.repeatCount); i++) {
       if (i > 0) await sleep(settings.pauseMs);
-      await speak(text, { lang: lang === 'en' ? settings.accent : 'de-DE', rate: settings.rate, voice });
+      const r = await speak(text, { lang: lang === 'en' ? settings.accent : 'de-DE', rate: settings.rate, voice });
+      if (r.status === 'error') {
+        toast(
+          r.error === 'not-allowed'
+            ? L('Vorlesen blockiert – bitte direkt auf den Lautsprecher tippen.', 'Speech blocked – tap the speaker button directly.')
+            : r.error === 'no-start'
+              ? L('Kein Ton? Stummschalter und Lautstärke prüfen, ggf. in Einstellungen eine andere Stimme wählen.', 'No sound? Check silent switch and volume, or choose another voice in Settings.')
+              : L(`Vorlesen fehlgeschlagen (${r.error ?? 'Fehler'}). Einstellungen → Sprache testen → Vorlesen testen.`, `Speech failed (${r.error ?? 'error'}).`),
+        );
+        break;
+      }
     }
     setBusy(false);
   };

@@ -5,7 +5,7 @@ import { shuffle } from '../../domain/text';
 import type { Grade, Item, Progress, Settings, Task } from '../../domain/types';
 import { useApp } from '../../state';
 import { SpeakButton } from '../../ui/components';
-import { pickVoice, speak } from '../../speech/tts';
+import { chosenVoice, speak } from '../../speech/tts';
 
 export interface ExerciseProps {
   item: Item;
@@ -150,7 +150,7 @@ export function useAutoSpeak(text: string, enabled: boolean, settings: Settings,
   useEffect(() => {
     if (!enabled || !text) return;
     const t = setTimeout(() => {
-      speak(text, { lang: settings.accent, rate: settings.rate, voice: pickVoice(settings.accent, settings.voiceURI, voices) });
+      speak(text, { lang: settings.accent, rate: settings.rate, voice: chosenVoice(settings.voiceURI, voices) });
     }, 150);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -2,6 +2,17 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.2.2] – 2026-11-26
+
+### Behoben
+- Vorlesen auf dem iPhone blieb stumm. Ohne ausdrücklich gewählte Stimme nutzt die App jetzt die iOS-Systemstimme der Sprache: Einige von iOS gelistete Stimmen sind nicht geladen oder aus Web-Apps nicht nutzbar und bleiben stumm.
+- Audio-Sitzung wird vor dem Vorlesen auf „Wiedergabe“ gesetzt (Audio Session API, iOS 17+): Ausgabe über den Lautsprecher, auch nach einer Mikrofonnutzung. Vor der Spracherkennung wird sie zurückgesetzt.
+- Kein `cancel()` direkt vor `speak()` mehr, wenn nichts läuft; WebKit verwirft die Ansage sonst. Laufende Ansagen bleiben referenziert, damit iOS sie nicht vorzeitig verwirft.
+
+### Hinzugefügt
+- Fehlermeldung statt Stille, wenn das Vorlesen scheitert.
+- „Sprache testen“ (vorher „Spracherkennung testen“) mit **Vorlesen testen** und Protokoll (Stimme, Audio-Sitzung, Ereignisse).
+
 ## [0.2.1] – 2026-11-26
 
 ### Behoben
