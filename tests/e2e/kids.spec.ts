@@ -46,13 +46,25 @@ test('kids session ends with stars, XP and a new badge; awards page shows level 
   await expect(page.locator('.badge-tile').first()).toBeVisible();
 });
 
-test('kids prompt targets school years 5–6 and offers the word-list photo option', async ({ page }) => {
+test('kids prompt targets school years 5–6 and has a strict photo-only mode', async ({ page }) => {
   await presetProfile(page, 'kid');
   await page.goto('/#/prompt');
+  await page.getByRole('button', { name: /Neue Inhalte erstellen/ }).click();
   await expect(page.locator('pre.prompt')).toContainText('school years 5–6');
-  await page.getByRole('button', { name: 'Vokabelliste (Foto/Datei)' }).click();
-  await expect(page.locator('pre.prompt')).toContainText('vocabulary list, photo or file');
   await expect(page.getByRole('button', { name: 'Technische Begriffe' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Nur aus meinen Fotos/ }).click();
+  const prompt = page.locator('pre.prompt');
+  await expect(prompt).toContainText('Use ONLY the entries that are visible on the photo(s)');
+  await expect(prompt).not.toContainText('previous conversations');
+  // no count / content choice in photo mode
+  await expect(page.getByLabel('Anzahl')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Persönliche Fehler' })).toHaveCount(0);
+  await expect(page.getByText(/neuen Chat außerhalb deines Englisch-Projekts/)).toBeVisible();
+
+  // the choice is remembered
+  await page.reload();
+  await expect(prompt).toContainText('Use ONLY the entries that are visible on the photo(s)');
 });
 
 test('profile can be switched in settings without losing progress', async ({ page }) => {

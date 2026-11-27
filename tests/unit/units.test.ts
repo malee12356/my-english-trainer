@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { draftToItem, inheritUnits, normalizeUnit, parseImport, parsePage, planImport } from '../../src/domain/importer';
 import { indexProgress } from '../../src/domain/planner';
-import { buildPrompt, DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS } from '../../src/domain/promptBuilder';
+import { buildPrompt, contentKindsFor, DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS, promptMode } from '../../src/domain/promptBuilder';
 import { inScope, listUnits, pageBounds, planHomework, scopeFromQuery, scopeLabel, scopeQuery } from '../../src/domain/scope';
 import { itemsToCsv } from '../../src/db/backup';
 
@@ -94,12 +94,41 @@ describe('practise by unit / pages', () => {
   });
 });
 
+describe('prompt: photo mode (only the attached photos)', () => {
+  it('uses only the photos and nothing from earlier chats, for both profiles', () => {
+    for (const base of [DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS]) {
+      const p = buildPrompt({ ...base, mode: 'photos' });
+      expect(p).toContain('Use ONLY the entries that are visible on the photo(s) attached to this message');
+      expect(p).toContain('IGNORE everything else: earlier conversations, memory');
+      expect(p).toContain('If no photo is attached, do not create any entries');
+      // none of the "generate" instructions that pull in earlier chats
+      expect(p).not.toContain('our previous conversations');
+      expect(p).not.toContain('mistakes I actually made');
+      expect(p).not.toMatch(/- \d+ entries/);
+      expect(p).toContain('"source": "book-photo"');
+    }
+  });
+  it('old saved options with the word-list kind open in photo mode; generate mode never mentions photos', () => {
+    expect(promptMode({ kinds: ['vocabulary', 'booklist'] })).toBe('photos');
+    expect(promptMode({ kinds: ['vocabulary'] })).toBe('generate');
+    expect(promptMode({ kinds: ['booklist'], mode: 'generate' })).toBe('generate');
+    const gen = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, kinds: ['vocabulary', 'booklist'], mode: 'generate' });
+    expect(gen).not.toContain('photo');
+    expect(contentKindsFor('kid').some((k) => k.id === 'booklist')).toBe(false);
+  });
+  it('kid photo prompt uses kid categories, the chosen topic if set', () => {
+    expect(buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, mode: 'photos' })).toContain('"School & Classroom", "Family & Animals", "Daily Life"');
+    expect(buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, mode: 'photos', topic: 'school' })).toContain('Use "School & Classroom" as category for every entry.');
+    expect(buildPrompt({ ...DEFAULT_PROMPT_OPTIONS, mode: 'photos' })).not.toContain('Family & Animals');
+  });
+});
+
 describe('prompt: unit and page detection', () => {
   it('adds the book rules when the photo word list option is chosen', () => {
-    const kid = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, kinds: ['booklist'] });
+    const kid = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, mode: 'photos' });
     expect(kid).toContain('A page WITHOUT a unit heading belongs to the last unit heading before it');
     expect(kid).toContain('"page": 196');
-    const adult = buildPrompt({ ...DEFAULT_PROMPT_OPTIONS, kinds: ['booklist'] });
+    const adult = buildPrompt({ ...DEFAULT_PROMPT_OPTIONS, mode: 'photos' });
     expect(adult).toContain('Read the page number of every photo');
     expect(buildPrompt(DEFAULT_PROMPT_OPTIONS)).not.toContain('Read the page number');
   });

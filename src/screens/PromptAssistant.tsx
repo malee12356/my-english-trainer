@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { buildPrompt, contentKindsFor, DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS, type ContentKind, type PromptOptions } from '../domain/promptBuilder';
+import { buildPrompt, contentKindsFor, DEFAULT_KID_PROMPT_OPTIONS, DEFAULT_PROMPT_OPTIONS, promptMode, type ContentKind, type PromptMode, type PromptOptions } from '../domain/promptBuilder';
 import { topicsFor } from '../domain/topics';
 import { gradeInfo } from '../domain/grades';
 import { CEFR_LEVELS } from '../domain/types';
@@ -20,9 +20,13 @@ function loadOpts(audience: 'adult' | 'kid'): PromptOptions {
 }
 
 export function PromptAssistant() {
-  const { L, lang, toast, settings } = useApp();
+  const { L, lang, toast, settings, route } = useApp();
   const audience = settings.profile === 'kid' ? 'kid' : 'adult';
-  const [opts, setO] = useState<PromptOptions>(() => loadOpts(audience));
+  const [opts, setO] = useState<PromptOptions>(() => {
+    const saved = loadOpts(audience);
+    const m = route.query.get('mode');
+    return m === 'photos' || m === 'generate' ? { ...saved, mode: m } : saved;
+  });
   const grade = gradeInfo(settings.kidGrade);
   const o: PromptOptions = { ...opts, grade: grade.id };
   const prompt = useMemo(() => buildPrompt(o), [o]);
@@ -35,7 +39,10 @@ export function PromptAssistant() {
       /* per-device convenience only */
     }
   };
-  const toggleKind = (k: ContentKind) => set({ kinds: o.kinds.includes(k) ? o.kinds.filter((x) => x !== k) : [...o.kinds, k] });
+  const mode = promptMode(o);
+  const kinds: ContentKind[] = o.kinds.filter((k) => k !== 'booklist');
+  const toggleKind = (k: ContentKind) => set({ kinds: kinds.includes(k) ? kinds.filter((x) => x !== k) : [...kinds, k] });
+  const setMode = (m: PromptMode) => set({ mode: m, kinds: kinds.length ? kinds : (audience === 'kid' ? DEFAULT_KID_PROMPT_OPTIONS : DEFAULT_PROMPT_OPTIONS).kinds });
 
   return (
     <main className="page">
@@ -47,11 +54,22 @@ export function PromptAssistant() {
         <li>{L('Hier „Zum Import“ → „Einfügen“ → „Aus Zwischenablage einfügen“ → Vorschau prüfen → bestätigen.', 'Here: “To import” → “Paste” → “Paste from clipboard” → check preview → confirm.')}</li>
       </ol>
 
-      <div className="banner info small" style={{ marginBottom: 12 }}>
-        <span aria-hidden="true">📸</span>
-        <span className="grow">{L('Tipp: Ein Foto der Vokabelliste (z. B. aus dem Englischbuch) in ChatGPT anhängen und unten „Vokabelliste (Foto/Datei)“ auswählen – ChatGPT macht daraus die Importdatei.', 'Tip: attach a photo of a word list (e.g. from the English book) in ChatGPT and select “Word list (photo/file)” below.')}</span>
+      <div className="chips" role="group" aria-label={L('Was soll ChatGPT tun?', 'What should ChatGPT do?')} style={{ marginBottom: 12 }}>
+        <button type="button" className="chip" aria-pressed={mode === 'photos'} onClick={() => setMode('photos')}>📸 {L('Nur aus meinen Fotos', 'Only from my photos')}</button>
+        <button type="button" className="chip" aria-pressed={mode === 'generate'} onClick={() => setMode('generate')}>✨ {L('Neue Inhalte erstellen', 'Create new content')}</button>
       </div>
+
+      {mode === 'photos' ? (
+        <div className="banner info small" style={{ marginBottom: 12 }}>
+          <span aria-hidden="true">📸</span>
+          <span className="grow">
+            {L('ChatGPT übernimmt nur die Wörter auf den Fotos – keine aus früheren Chats. Fotos der Vokabelseiten in derselben Nachricht wie den Prompt anhängen.', 'ChatGPT takes only the words on the photos – none from earlier chats. Attach the photos of the word list to the same message as the prompt.')}
+            <strong style={{ display: 'block', marginTop: 4 }}>{L('Am sichersten: in ChatGPT einen neuen Chat außerhalb deines Englisch-Projekts öffnen (oder „Temporärer Chat“).', 'Safest: open a new chat in ChatGPT outside your English project (or a “temporary chat”).')}</strong>
+          </span>
+        </div>
+      ) : null}
       <div className="card stack">
+        {mode === 'generate' && (<>
         <div className="grid-2">
           <label className="field"><span>{L('Anzahl', 'Count')}</span>
             <select className="select" value={o.count} onChange={(e) => set({ count: Number(e.target.value) })}>
@@ -65,12 +83,14 @@ export function PromptAssistant() {
             </select>
           </label>
         </div>
+        </>)}
         <label className="field"><span>{L('Thema', 'Topic')}</span>
           <select className="select" value={o.topic} onChange={(e) => set({ topic: e.target.value })}>
             <option value="mixed">{L('Gemischt', 'Mixed')}</option>
             {topicsFor(audience).map((t) => <option key={t.id} value={t.id}>{lang === 'de' ? t.nameDe : t.name}</option>)}
           </select>
         </label>
+        {mode === 'generate' && (<>
         <label className="field"><span>{L('Lernmodus-Fokus', 'Practice focus')}</span>
           <select className="select" value={o.focusMethod} onChange={(e) => set({ focusMethod: e.target.value as PromptOptions['focusMethod'] })}>
             <option value="mixed">{L('Gemischt', 'Mixed')}</option>
@@ -84,12 +104,13 @@ export function PromptAssistant() {
           <span>{L('Inhalte', 'Content')}</span>
           <div className="chips wrap">
             {contentKindsFor(audience).map((k) => (
-              <button key={k.id} type="button" className="chip" aria-pressed={o.kinds.includes(k.id)} onClick={() => toggleKind(k.id)}>
+              <button key={k.id} type="button" className="chip" aria-pressed={kinds.includes(k.id)} onClick={() => toggleKind(k.id)}>
                 {lang === 'de' ? k.de : k.en}
               </button>
             ))}
           </div>
         </div>
+        </>)}
         <label className="field"><span>{L('Zusätzliche Wünsche (optional)', 'Additional wishes (optional)')}</span>
           <input className="input" value={o.extraNote ?? ''} onChange={(e) => set({ extraNote: e.target.value })} placeholder={L('z. B. Fokus auf Konvergenzprobleme', 'e.g. focus on convergence problems')} />
         </label>

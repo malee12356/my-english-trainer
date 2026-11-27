@@ -83,11 +83,10 @@ describe('kids topics, content and prompt', () => {
     expect([...cats].sort()).toEqual(['daily', 'family', 'school']);
   });
   it('builds a pupil-oriented prompt with kid categories and a code block instruction', () => {
-    const p = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, kinds: ['vocabulary', 'booklist'] });
+    const p = buildPrompt({ ...DEFAULT_KID_PROMPT_OPTIONS, kinds: ['vocabulary'] });
     expect(p).toContain('school years 5–6');
     expect(p).toContain('School & Classroom | Family & Animals | Daily Life');
     expect(p).toContain('ONE single code block');
-    expect(p).toContain('vocabulary list, photo or file');
     expect(p).toContain('Child-friendly');
     expect(p).not.toContain('Engineering');
     expect(contentKindsFor('kid').some((k) => k.id === 'technical')).toBe(false);

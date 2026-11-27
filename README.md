@@ -55,7 +55,7 @@ Die App ergänzt ein persönliches English-Projekt in ChatGPT: Dort entstehen in
 ## Inhalte aus ChatGPT importieren
 
 1. Einstellungen → **ChatGPT-Import** → Prompt konfigurieren → **Prompt kopieren**.
-2. In das English-Projekt in ChatGPT einfügen. Tipp: ein **Foto der Vokabelliste** aus dem Englischbuch anhängen und „Vokabelliste (Foto/Datei)“ wählen.
+2. In das English-Projekt in ChatGPT einfügen. Für eine **Vokabelliste aus dem Englischbuch** oben „📸 Nur aus meinen Fotos“ wählen und die Fotos in derselben Nachricht anhängen – am besten in einem neuen Chat außerhalb des Projekts, damit ChatGPT keine Wörter aus früheren Unterhaltungen dazumischt.
 3. In der Antwort beim **Codeblock oben rechts auf „Kopieren“** tippen (nicht die ganze Nachricht). Wurde doch die ganze Nachricht kopiert, repariert die App das meist automatisch.
 4. Einstellungen → **Datei / Text importieren** → Vorschau prüfen → **Import bestätigen**.
 

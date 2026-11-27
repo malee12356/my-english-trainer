@@ -50,7 +50,7 @@ export function Vocab() {
       if (level && it.level !== level) return false;
       if (type && it.type !== type) return false;
       if (coll && !it.collections.includes(coll)) return false;
-      if (unitF && it.unit !== unitF) return false;
+      if (unitF === '__none__' ? !!it.unit || it.origin !== 'import' : unitF && it.unit !== unitF) return false;
       if (nq) {
         const hay = normalize([it.english, it.german, ...it.tags, ...it.alternatives_en, ...it.alternatives_de, it.notes ?? '', it.example_en ?? ''].join(' '));
         if (!hay.includes(nq)) return false;
@@ -242,6 +242,7 @@ export function Vocab() {
             <label className="field"><span>Unit</span>
               <select className="select" value={unitF} onChange={(e) => setUnitF(e.target.value)}>
                 <option value="">{L('Alle', 'All')}</option>
+                <option value="__none__">{L('Importiert, ohne Unit', 'Imported, without unit')}</option>
                 {listUnits(snap.items).map((u) => <option key={u.unit} value={u.unit}>{u.unit} ({u.count})</option>)}
               </select>
             </label>

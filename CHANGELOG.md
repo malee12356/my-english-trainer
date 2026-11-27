@@ -2,6 +2,16 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.9.1] – 2026-11-27
+
+### Behoben
+- **Foto-Prompt mischte eigene Vokabeln dazu:** War „Vokabelliste (Foto/Datei)“ zusammen mit anderen Inhalten gewählt, bat der Prompt ChatGPT auch um Fehler und Wörter aus früheren Unterhaltungen im Projekt. Dadurch kamen z. B. die Vokabeln der Eltern mit. Jetzt gibt es oben zwei getrennte Modi: **„📸 Nur aus meinen Fotos“** (eigener, strikter Prompt: nur die angehängten Fotos, ausdrücklich nichts aus früheren Chats, Gedächtnis oder Projektdateien, keine Mengenvorgabe, ohne Foto keine Einträge) und **„✨ Neue Inhalte erstellen“**. Hinweis im Foto-Modus: am sichersten in einem neuen Chat außerhalb des Englisch-Projekts.
+- „Hausaufgabe üben“ öffnet den Prompt direkt im Foto-Modus. Gespeicherte Einstellungen mit der alten Option öffnen ebenfalls im Foto-Modus.
+- Der Prompt „Neue Inhalte erstellen“ enthält keine Felder `unit`/`page`/`book` mehr.
+
+### Hinzugefügt
+- Vokabelfilter **„Importiert, ohne Unit“**, um versehentlich mitimportierte Wörter auf einmal zu finden und zu löschen (vorher wird automatisch eine Kopie angelegt).
+
 ## [0.9.0] – 2026-11-27
 
 ### Hinzugefügt – Automatische Kopien und Ein-Tipp-Backup

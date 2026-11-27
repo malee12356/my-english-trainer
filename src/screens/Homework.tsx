@@ -33,12 +33,12 @@ export function HomeworkScreen() {
             <strong>{L('Noch keine Units oder Seiten gespeichert', 'No units or pages saved yet')}</strong>
             <p className="muted" style={{ margin: '6px 0 0' }}>
               {L(
-                'Fotografiere die Vokabelseiten im Englischbuch, schick sie mit dem ChatGPT-Prompt („Vokabelliste (Foto/Datei)“) an ChatGPT und importiere das Ergebnis. Dann stehen hier Units und Seiten zur Auswahl.',
-                'Photograph the vocabulary pages, send them to ChatGPT with the prompt (“Word list (photo/file)”) and import the result.',
+                'Fotografiere die Vokabelseiten im Englischbuch, schick sie mit dem ChatGPT-Prompt („Nur aus meinen Fotos“) an ChatGPT und importiere das Ergebnis. Dann stehen hier Units und Seiten zur Auswahl.',
+                'Photograph the vocabulary pages, send them to ChatGPT with the prompt (“Only from my photos”) and import the result.',
               )}
             </p>
           </div>
-          <a className="btn block" href="#/prompt">📸 {L('Zum ChatGPT-Prompt', 'To the ChatGPT prompt')}</a>
+          <a className="btn block" href="#/prompt?mode=photos">📸 {L('Zum ChatGPT-Prompt', 'To the ChatGPT prompt')}</a>
         </div>
       ) : (
         <div className="stack">
