@@ -19,6 +19,7 @@ import type { ExerciseProps } from './exercises/shared';
 import { xpForAnswer, SESSION_BONUS_XP, MIN_ANSWERS_FOR_BONUS } from '../domain/gamification';
 import { KidSummary } from './kids/KidSummary';
 import { ChallengeSummary } from './kids/ChallengeSummary';
+import { hasScope, inScope, planHomework, scopeFromQuery, scopeLabel, scopeQuery } from '../domain/scope';
 import { DEFAULT_CHALLENGE_WORDS, DEFAULT_MINUTES_PER_WORD, earnsReward, planChallenge, type ChallengeAnswer, type ChallengeResult } from '../domain/challenge';
 
 const MAX_IDLE_MS = 60_000;
@@ -30,6 +31,8 @@ export function SessionScreen() {
   const method = (route.query.get('method') ?? 'auto') as Method | 'auto';
   const minutes = Number(route.query.get('min') ?? settings.defaultDurationMin) || 15;
   const challenge = route.query.get('mode') === 'challenge';
+  const homework = route.query.get('mode') === 'homework';
+  const scopeKey = scopeQuery(scopeFromQuery(route.query));
   const answerMode: ChallengeAnswer = route.query.get('answer') === 'speaking' ? 'speaking' : 'writing';
 
   const [snap, setSnap] = useState<Snapshot | null>(null);
@@ -53,9 +56,13 @@ export function SessionScreen() {
       const [s, introduced] = await Promise.all([loadSnapshot(), newItemsIntroducedToday()]);
       if (!alive) return;
       const sttUsable = detectSpeechCapabilities().recognitionUsable;
+      const scope = scopeFromQuery(new URLSearchParams(scopeKey));
+      const scopedItems = hasScope(scope) ? s.items.filter((i) => inScope(i, scope)) : s.items;
       const tasks = challenge
-        ? planChallenge(s.items, indexProgress(s.progress), new Date(), s.settings.challengeWords ?? DEFAULT_CHALLENGE_WORDS, answerMode === 'speaking' && sttUsable ? 'speaking' : 'writing')
-        : planSession(s.items, indexProgress(s.progress), {
+        ? planChallenge(scopedItems, indexProgress(s.progress), new Date(), s.settings.challengeWords ?? DEFAULT_CHALLENGE_WORDS, answerMode === 'speaking' && sttUsable ? 'speaking' : 'writing')
+        : homework
+          ? planHomework(scopedItems, indexProgress(s.progress), scope, method === 'writing' ? 'writing' : 'flashcards')
+          : planSession(s.items, indexProgress(s.progress), {
             topic, method, minutes, now: new Date(), newPerDay: s.settings.newPerDay, newIntroducedToday: introduced,
             flashcardDirection: s.settings.flashcardDirection, ttsAvailable: ttsSupported(),
             sttAvailable: sttUsable,
@@ -76,7 +83,7 @@ export function SessionScreen() {
       alive = false;
       stopSpeaking();
     };
-  }, [topic, method, minutes, challenge, answerMode]);
+  }, [topic, method, minutes, challenge, answerMode, homework, scopeKey]);
 
   const itemsById = useMemo(() => new Map((snap?.items ?? []).map((i) => [i.id, i])), [snap]);
   const progressById = useMemo(() => new Map((snap?.progress ?? []).map((p) => [p.id, p])), [snap]);
@@ -167,7 +174,8 @@ export function SessionScreen() {
             <div style={{ width: `${progress * 100}%` }} />
           </div>
           <div className="tiny muted" style={{ marginTop: 4 }}>
-            {challenge ? L('🎮 Spielzeit-Challenge', '🎮 Screen-time challenge') : `${topicLabel(topic, snap.categories, lang)} · ${methodLabel(method, lang)}`} · {Math.min(idx + 1, queue.length)}/{queue.length}
+            {challenge ? L('🎮 Spielzeit-Challenge', '🎮 Screen-time challenge') : homework ? `📚 ${methodLabel(method, lang)}` : `${topicLabel(topic, snap.categories, lang)} · ${methodLabel(method, lang)}`}
+            {scopeKey && ` · ${scopeLabel(scopeFromQuery(new URLSearchParams(scopeKey)), lang)}`} · {Math.min(idx + 1, queue.length)}/{queue.length}
           </div>
         </div>
         {challenge ? (

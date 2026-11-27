@@ -4,6 +4,7 @@ import { bulkUpdate, createCategory, createCollection, deleteItems, updateItem }
 import { weakness } from '../domain/planner';
 import { summarize } from '../domain/summary';
 import { normalize } from '../domain/text';
+import { listUnits } from '../domain/scope';
 import { CEFR_LEVELS, ITEM_TYPES, type Collection, type Item } from '../domain/types';
 import { navigate, useApp, useSnapshot } from '../state';
 import { Empty, Sheet, SpeakButton, useConfirm } from '../ui/components';
@@ -23,6 +24,7 @@ export function Vocab() {
   const [level, setLevel] = useState('');
   const [type, setType] = useState('');
   const [coll, setColl] = useState('');
+  const [unitF, setUnitF] = useState(route.query.get('unit') ?? '');
   const [sort, setSort] = useState<Sort>('recent');
   const [limit, setLimit] = useState(PAGE);
   const [selecting, setSelecting] = useState(false);
@@ -48,6 +50,7 @@ export function Vocab() {
       if (level && it.level !== level) return false;
       if (type && it.type !== type) return false;
       if (coll && !it.collections.includes(coll)) return false;
+      if (unitF && it.unit !== unitF) return false;
       if (nq) {
         const hay = normalize([it.english, it.german, ...it.tags, ...it.alternatives_en, ...it.alternatives_de, it.notes ?? '', it.example_en ?? ''].join(' '));
         if (!hay.includes(nq)) return false;
@@ -60,7 +63,7 @@ export function Vocab() {
     else if (sort === 'difficulty') list = list.sort((a, b) => weakness(b, sum.index.get(b.id)).score - weakness(a, sum.index.get(a.id)).score);
     else list = list.sort((a, b) => b.created_at.localeCompare(a.created_at));
     return list;
-  }, [snap, sum, q, status, cat, level, type, coll, sort]);
+  }, [snap, sum, q, status, cat, level, type, coll, sort, unitF]);
 
   if (!snap || !sum) return <main className="page" aria-busy="true" />;
 
@@ -95,7 +98,7 @@ export function Vocab() {
     if (st === 'new') return <span className="badge accent">{L('neu', 'new')}</span>;
     return null;
   };
-  const activeFilters = [cat, level, type, coll].filter(Boolean).length;
+  const activeFilters = [cat, level, type, coll, unitF].filter(Boolean).length;
 
   return (
     <main className="page">
@@ -163,6 +166,8 @@ export function Vocab() {
                   <span className="row wrap" style={{ gap: 4, marginTop: 4 }}>
                     {statusBadge(it.id)}
                     {it.level && <span className="badge">{it.level}</span>}
+                    {it.unit && <span className="badge accent">{it.unit}</span>}
+                    {it.page !== undefined && <span className="badge">S. {it.page}</span>}
                     {it.categories.slice(0, 2).map((c) => (
                       <span key={c} className="badge">{snap.categories.find((x) => x.id === c)?.name ?? c}</span>
                     ))}
@@ -233,6 +238,14 @@ export function Vocab() {
               {ITEM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </label>
+          {listUnits(snap.items).length > 0 && (
+            <label className="field"><span>Unit</span>
+              <select className="select" value={unitF} onChange={(e) => setUnitF(e.target.value)}>
+                <option value="">{L('Alle', 'All')}</option>
+                {listUnits(snap.items).map((u) => <option key={u.unit} value={u.unit}>{u.unit} ({u.count})</option>)}
+              </select>
+            </label>
+          )}
           <label className="field"><span>{L('Eigene Sammlung', 'Collection')}</span>
             <select className="select" value={coll} onChange={(e) => setColl(e.target.value)}>
               <option value="">{L('Alle', 'All')}</option>
@@ -240,7 +253,7 @@ export function Vocab() {
             </select>
           </label>
           <button className="btn block" onClick={() => setSheet(null)}>{L('Anwenden', 'Apply')}</button>
-          <button className="btn block secondary" onClick={() => { setCat(''); setLevel(''); setType(''); setColl(''); }}>{L('Zurücksetzen', 'Reset')}</button>
+          <button className="btn block secondary" onClick={() => { setCat(''); setLevel(''); setType(''); setColl(''); setUnitF(''); }}>{L('Zurücksetzen', 'Reset')}</button>
         </div>
       </Sheet>
 

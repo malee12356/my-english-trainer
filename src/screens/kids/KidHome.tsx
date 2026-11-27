@@ -77,6 +77,15 @@ export function KidHome() {
           <span className="btn small">{L('Los', 'Go')}</span>
         </button>
 
+        <button className="kid-card blue" style={{ border: 0, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }} onClick={() => navigate('/homework')}>
+          <span style={{ fontSize: 40 }} aria-hidden="true">📚</span>
+          <span className="grow">
+            <strong style={{ display: 'block', fontSize: 19 }}>{L('Hausaufgabe üben', 'Practise homework')}</strong>
+            <span className="small muted">{L('Unit oder Seiten aus dem Englischbuch', 'Unit or pages from the English book')}</span>
+          </span>
+          <span className="btn small">{L('Los', 'Go')}</span>
+        </button>
+
         <section className="kid-card yellow" aria-label={L('Tagesmissionen', 'Daily missions')}>
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
             <strong style={{ fontSize: 18 }}>🎯 {L('Missionen für heute', "Today's missions")}</strong>

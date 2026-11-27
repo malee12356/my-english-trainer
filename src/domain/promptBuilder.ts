@@ -62,6 +62,13 @@ const KIND_TEXT: Record<ContentKind, string> = {
     'ALL entries of the vocabulary list, photo or file that I attach to this message or uploaded to this project (e.g. a page of my English book) – convert exactly those entries, do not add others',
 };
 
+const BOOK_RULES = `Rules for photos or pages of a school book / word list:
+- Read the page number of every photo and put it into "page" (number only, e.g. 196).
+- Detect unit headings (e.g. "Unit 3", "Welcome", "Lektion 2") and put them into "unit" (e.g. "Unit 3").
+- A page WITHOUT a unit heading belongs to the last unit heading before it (by page number). Example: page 196 shows "Unit 1", pages 197 and 198 have no heading → also "Unit 1"; page 199 shows "Unit 2" → "Unit 2".
+- If the book title is visible, put it into "book".
+- Keep the order of the word list.`;
+
 function kidKindText(k: ContentKind, g: GradeInfo): string {
   switch (k) {
     case 'vocabulary':
@@ -112,7 +119,7 @@ What I need:
 ${kinds}
 - Prioritise words, phrases and structures that I was missing, used incorrectly or hesitated with in our past conversations.
 - Prefer complete, reusable sentences over isolated words, especially for meetings and technical discussions.
-- Do not include confidential company information, names of real colleagues, customers or children.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
+- Do not include confidential company information, names of real colleagues, customers or children.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}${o.kinds.includes('booklist') ? `\n\n${BOOK_RULES}` : ''}
 
 Output format – IMPORTANT:
 Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so I can copy it with the code block's copy button. Each entry:
@@ -130,6 +137,9 @@ Put the complete JSON array into ONE single code block marked as json (\`\`\`jso
   "common_mistake": "the wrong version I used (only for corrections)",
   "explanation": "short explanation in German why/when to use it (optional)",
   "tags": ["short", "keywords"],
+  "unit": "Unit 3 (only for school book / word list photos)",
+  "page": 196,
+  "book": "book title, if visible (optional)",
   "source": "chatgpt-project"
 }
 
@@ -168,7 +178,7 @@ What I need:
 ${kinds}
 - Prefer words and sentences that were difficult or wrong in our previous exercises.
 - Child-friendly content only. No names of real people, no addresses, no school names.
-- Explanations ("explanation") in short, simple German that a ${g.age}-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}
+- Explanations ("explanation") in short, simple German that a ${g.age}-year-old understands.${o.extraNote ? `\n- Additional wishes: ${o.extraNote.trim()}` : ''}${o.kinds.includes('booklist') ? `\n\n${BOOK_RULES}` : ''}
 
 Output format – IMPORTANT:
 Put the complete JSON array into ONE single code block marked as json (\`\`\`json … \`\`\`), with no other text inside the code block, so it can be copied with the code block's copy button. Each entry:
@@ -184,6 +194,9 @@ Put the complete JSON array into ONE single code block marked as json (\`\`\`jso
   "alternatives_de": ["other correct German translations in THIS context only"],
   "common_mistake": "the wrong version (only for corrections)",
   "explanation": "very short explanation in simple German (optional)",
+  "unit": "Unit 3 (only for school book / word list photos)",
+  "page": 196,
+  "book": "book title, if visible (optional)",
   "source": "chatgpt-project"
 }
 

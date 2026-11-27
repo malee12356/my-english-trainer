@@ -17,6 +17,8 @@ ChatGPT gibt das JSON in einem **Codeblock** (dunkler Kasten) aus. Bitte den **K
 
 ## Vokabelliste aus dem Schulbuch
 
+Mehrere Fotos auf einmal sind kein Problem. ChatGPT übernimmt Unit und Seite: Eine Seite ohne Unit-Überschrift gehört zur letzten Unit davor. In der App lassen sich die Wörter dann unter **„Hausaufgabe üben“** gezielt nach Unit oder Seiten (z. B. 196–198) wiederholen.
+
 Im Prompt „Vokabelliste (Foto/Datei)“ wählen, in ChatGPT ein Foto der Wörterliste anhängen und den Prompt senden. ChatGPT wandelt genau diese Einträge in das Importformat um.
 
 ## Der ChatGPT-Prompt

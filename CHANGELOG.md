@@ -2,6 +2,15 @@
 
 Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach [SemVer](https://semver.org/lang/de/).
 
+## [0.8.0] – 2026-11-27
+
+### Hinzugefügt – Units und Seiten aus dem Schulbuch
+- Neue optionale Felder je Vokabel: **`unit`**, **`page`**, **`book`** (Import JSON/CSV, Export, Editor, Backup).
+- **ChatGPT-Prompt** mit „Vokabelliste (Foto/Datei)“: ChatGPT liest Unit-Überschriften und Seitenzahlen von den Fotos. Seiten ohne Überschrift gehören zur letzten Unit davor (z. B. S. 196 „Unit 1“, S. 197–198 → Unit 1, S. 199 „Unit 2“).
+- **Import hilft mit:** Fehlt bei einer Seite die Unit, wird sie von der nächstniedrigeren Seite derselben Datei (und desselben Buchs) übernommen. Schreibweisen wie „3“, „unit 3“ werden zu „Unit 3“, Seiten wie „S. 196“ zu 196.
+- **„📚 Hausaufgabe üben“** (Schüler-Startseite und „Lernen“): Unit wählen oder Seiten von–bis, dann **alle** Wörter des Bereichs schreiben, mit Karteikarten üben oder als **Spielzeit-Challenge** spielen.
+- Vokabelliste zeigt Unit und Seite und filtert nach Unit.
+
 ## [0.7.1] – 2026-11-27
 
 ### Behoben

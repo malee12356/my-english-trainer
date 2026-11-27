@@ -66,6 +66,13 @@ export function Learn() {
       <h1 className="large-title">{L('Lernen', 'Learn')}</h1>
       <p className="subtitle">{L('Thema und Lernmethode frei kombinieren.', 'Combine any topic with any method.')}</p>
 
+      <a className="card row" href="#/homework" style={{ textDecoration: 'none', color: 'inherit', marginBottom: 4 }}>
+        <span className="icon-badge" aria-hidden="true">📚</span>
+        <span className="grow">
+          <strong style={{ display: 'block' }}>{L('Nach Unit / Seite üben', 'Practise by unit / page')}</strong>
+          <span className="small muted">{L('z. B. Hausaufgabe „Unit 3“ oder Seiten 196–198', 'e.g. homework “Unit 3” or pages 196–198')}</span>
+        </span>
+      </a>
       <h2 className="section-title">{L('Themenmodus', 'Topic mode')}</h2>
       <div className="grid-2">
         {topicCard('all', '🌍', L('Alle Themen', 'All topics'), `${counts.all} ${L('Einträge', 'items')}`)}
